@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="ValheimModManager.UI.Views.FilePicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             x:Name="uc">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition
+                Width="*" />
+            <ColumnDefinition
+                Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <ui:TextBox
+            Grid.Column="0"
+            FontSize="18"
+            IsReadOnly="True"
+            Text="{Binding ElementName=uc, Path=FileName}" />
+
+        <ui:Button
+            Grid.Column="1"
+            Appearance="Primary"
+            Content="Browse"
+            FontWeight="Bold"
+            FontSize="18"
+            Icon="Folder28"
+            Padding="9"
+            Click="Browse" />
+    </Grid>
+</UserControl>

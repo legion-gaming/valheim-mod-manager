@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="ValheimModManager.UI.Views.OnlineModActions"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             prism:ViewModelLocator.AutoWireViewModel="False"
+             x:Name="uc">
+    <Grid>
+        <StackPanel
+            Orientation="Horizontal">
+            <ComboBox
+                ItemsSource="{Binding Versions}"
+                DisplayMemberPath="VersionNumber"
+                FontSize="18"
+                FontWeight="Bold"
+                Margin="0, 0, 10, 0"
+                SelectedIndex="0"
+                x:Name="VersionSelector"/>
+
+            <ui:Button
+                Appearance="Info"
+                Icon="ArrowDownload24"
+                Content="Download"
+                FontSize="18"
+                FontWeight="Bold"
+                Margin="0, 0, 10, 0"
+                Padding="9"
+                Command="{Binding ElementName=uc, Path=DownloadCommand}"
+                CommandParameter="{Binding ElementName=VersionSelector, Path=SelectedItem}" />
+
+            <ui:Button
+                Appearance="Danger"
+                Icon="ErrorCircle24"
+                Content="Download without dependencies"
+                FontSize="18"
+                FontWeight="Bold"
+                Padding="9"
+                Command="{Binding ElementName=uc, Path=DownloadWithoutDependenciesCommand}"
+                CommandParameter="{Binding ElementName=VersionSelector, Path=SelectedItem}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

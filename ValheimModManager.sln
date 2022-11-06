@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ValheimModManager", "src\ValheimModManager\ValheimModManager.csproj", "{1C192676-A4A0-4F88-858F-FEB9F739F726}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ValheimModManager.Core", "src\ValheimModManager.Core\ValheimModManager.Core.csproj", "{B59B9544-B8BD-401E-8A0E-9DBD7CD17278}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ValheimModManager.Pages", "src\ValheimModManager.Pages\ValheimModManager.Pages.csproj", "{F7F929F6-1F09-4BCD-B15A-56DA3F588AB4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ValheimModManager.UI", "src\ValheimModManager.UI\ValheimModManager.UI.csproj", "{BBD07E23-26ED-4293-90CD-F0DEF1152B01}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1C192676-A4A0-4F88-858F-FEB9F739F726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C192676-A4A0-4F88-858F-FEB9F739F726}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C192676-A4A0-4F88-858F-FEB9F739F726}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C192676-A4A0-4F88-858F-FEB9F739F726}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B59B9544-B8BD-401E-8A0E-9DBD7CD17278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B59B9544-B8BD-401E-8A0E-9DBD7CD17278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B59B9544-B8BD-401E-8A0E-9DBD7CD17278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B59B9544-B8BD-401E-8A0E-9DBD7CD17278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7F929F6-1F09-4BCD-B15A-56DA3F588AB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7F929F6-1F09-4BCD-B15A-56DA3F588AB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7F929F6-1F09-4BCD-B15A-56DA3F588AB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7F929F6-1F09-4BCD-B15A-56DA3F588AB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBD07E23-26ED-4293-90CD-F0DEF1152B01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBD07E23-26ED-4293-90CD-F0DEF1152B01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBD07E23-26ED-4293-90CD-F0DEF1152B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBD07E23-26ED-4293-90CD-F0DEF1152B01}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DECD217C-DE97-413C-A3C0-B1BB0B9ECB5B}
+	EndGlobalSection
+EndGlobal

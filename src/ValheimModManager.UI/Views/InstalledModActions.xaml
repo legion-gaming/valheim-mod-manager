@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="ValheimModManager.UI.Views.InstalledModActions"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             prism:ViewModelLocator.AutoWireViewModel="False"
+             x:Name="uc">
+    <Grid>
+        <StackPanel
+            Orientation="Horizontal">
+            <!--<ComboBox
+                ItemsSource="{Binding Versions}"
+                DisplayMemberPath="VersionNumber"
+                FontSize="18"
+                FontWeight="Bold"
+                Margin="0, 0, 10, 0"
+                SelectedIndex="0"
+                x:Name="VersionSelector"/> // Todo:-->
+
+            <!--<ui:Button
+                Appearance="Info"
+                Icon="ArrowCircleUp24"
+                Content="Update"
+                FontSize="18"
+                FontWeight="Bold"
+                Margin="0, 0, 10, 0"
+                Padding="9"
+                Command="{Binding ElementName=uc, Path=UpdateCommand}"
+                CommandParameter="{Binding ElementName=VersionSelector, Path=SelectedItem}" /> // Todo:-->
+
+            <ui:Button
+                Appearance="Caution"
+                Icon="Delete24"
+                Content="Uninstall"
+                FontSize="18"
+                FontWeight="Bold"
+                Margin="0, 0, 10, 0"
+                Padding="9"
+                Command="{Binding ElementName=uc, Path=UninstallCommand}"
+                CommandParameter="{Binding ElementName=uc, Path=UninstallCommandParameter}" />
+
+            <ui:Button
+                Appearance="Danger"
+                Icon="Delete24"
+                Content="Uninstall without dependencies"
+                FontSize="18"
+                FontWeight="Bold"
+                Padding="9"
+                Command="{Binding ElementName=uc, Path=UninstallWithoutDependenciesCommand}"
+                CommandParameter="{Binding ElementName=uc, Path=UninstallWithoutDependenciesCommandParameter}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

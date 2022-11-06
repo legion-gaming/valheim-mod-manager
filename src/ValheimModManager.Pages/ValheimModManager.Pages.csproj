@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+    <PackageReference Include="WPF-UI" Version="2.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ValheimModManager.Core\ValheimModManager.Core.csproj" />
+    <ProjectReference Include="..\ValheimModManager.UI\ValheimModManager.UI.csproj" />
+  </ItemGroup>
+</Project>
