@@ -4,14 +4,15 @@ using Prism.Regions;
 
 namespace ValheimModManager.Core.ViewModels
 {
-    public class RegionViewModelBase : ViewModelBase, INavigationAware, IConfirmNavigationRequest
+    public class RegionViewModelBase : ViewModelBase, IConfirmNavigationRequest
     {
-        protected IRegionManager RegionManager { get; private set; }
 
         public RegionViewModelBase(IRegionManager regionManager)
         {
             RegionManager = regionManager;
         }
+
+        protected IRegionManager RegionManager { get; }
 
         public virtual void ConfirmNavigationRequest(NavigationContext navigationContext, Action<bool> continuationCallback)
         {
@@ -25,12 +26,10 @@ namespace ValheimModManager.Core.ViewModels
 
         public virtual void OnNavigatedFrom(NavigationContext navigationContext)
         {
-
         }
 
         public virtual void OnNavigatedTo(NavigationContext navigationContext)
         {
-
         }
     }
 }

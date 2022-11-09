@@ -32,6 +32,8 @@ namespace ValheimModManager.Core.Utilities
 
         protected virtual Task ExtractEntryAsync(ZipArchiveEntry entry, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             return SaveEntryToDiskAsync(entry, cancellationToken);
         }
 

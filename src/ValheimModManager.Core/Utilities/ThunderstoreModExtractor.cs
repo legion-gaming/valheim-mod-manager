@@ -3,110 +3,111 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 
-namespace ValheimModManager.Core.Utilities;
-
-public class ThunderstoreModExtractor : ZipExtractor
+namespace ValheimModManager.Core.Utilities
 {
-    private readonly string _modName;
-
-    public ThunderstoreModExtractor(ZipArchive zipArchive, string basePath, string modName)
-        : base(zipArchive, basePath)
+    public class ThunderstoreModExtractor : ZipExtractor
     {
-        _modName = modName;
-    }
+        private readonly string _modName;
 
-    protected override bool OverwriteIfExists(ZipArchiveEntry entry)
-    {
-        return !IsConfig(entry);
-    }
-
-    protected override string GetFilePath(ZipArchiveEntry entry)
-    {
-        if (IsDirectory(entry))
+        public ThunderstoreModExtractor(ZipArchive zipArchive, string basePath, string modName)
+            : base(zipArchive, basePath)
         {
-            return base.GetFilePath(entry);
+            _modName = modName;
         }
 
-        var pathBuilder = new StringBuilder("BepInEx/");
-
-        if (IsConfig(entry))
+        protected override bool OverwriteIfExists(ZipArchiveEntry entry)
         {
-            pathBuilder.Append("config/");
-            pathBuilder.Append(ReplacePathToken(entry.FullName, "config", _modName));
+            return !IsConfig(entry);
+        }
+
+        protected override string GetFilePath(ZipArchiveEntry entry)
+        {
+            if (IsDirectory(entry))
+            {
+                return base.GetFilePath(entry);
+            }
+
+            var pathBuilder = new StringBuilder("BepInEx/");
+
+            if (IsConfig(entry))
+            {
+                pathBuilder.Append("config/");
+                pathBuilder.Append(ReplacePathToken(entry.FullName, "config", _modName));
+
+                return pathBuilder.ToString();
+            }
+
+            if (IsCore(entry))
+            {
+                pathBuilder.Append("core/");
+                pathBuilder.Append(ReplacePathToken(entry.FullName, "core", _modName));
+
+                return pathBuilder.ToString();
+            }
+
+            if (IsPatcher(entry))
+            {
+                pathBuilder.Append("patchers/");
+                pathBuilder.Append(ReplacePathToken(entry.FullName, "patchers", _modName));
+
+                return pathBuilder.ToString();
+            }
+
+            if (IsPlugin(entry))
+            {
+                pathBuilder.Append("plugins/");
+                pathBuilder.Append(ReplacePathToken(entry.FullName, "plugins", _modName));
+
+                return pathBuilder.ToString();
+            }
+
+            pathBuilder.Append($"plugins/{_modName}/{(!string.IsNullOrWhiteSpace(entry.Name) ? entry.Name : entry.FullName)}");
 
             return pathBuilder.ToString();
         }
 
-        if (IsCore(entry))
+        protected bool IsDirectory(ZipArchiveEntry entry)
         {
-            pathBuilder.Append("core/");
-            pathBuilder.Append(ReplacePathToken(entry.FullName, "core", _modName));
-
-            return pathBuilder.ToString();
+            return entry.FullName.EndsWith('/');
         }
 
-        if (IsPatcher(entry))
+        protected bool IsConfig(ZipArchiveEntry entry)
         {
-            pathBuilder.Append("patchers/");
-            pathBuilder.Append(ReplacePathToken(entry.FullName, "patchers", _modName));
-
-            return pathBuilder.ToString();
+            return !IsDirectory(entry) && entry.FullName.StartsWith("config/");
         }
 
-        if (IsPlugin(entry))
+        protected bool IsCore(ZipArchiveEntry entry)
         {
-            pathBuilder.Append("plugins/");
-            pathBuilder.Append(ReplacePathToken(entry.FullName, "plugins", _modName));
-
-            return pathBuilder.ToString();
+            return !IsDirectory(entry) && entry.FullName.StartsWith("core/");
         }
 
-        pathBuilder.Append($"plugins/{_modName}/{(!string.IsNullOrWhiteSpace(entry.Name) ? entry.Name : entry.FullName)}");
-
-        return pathBuilder.ToString();
-    }
-
-    protected bool IsDirectory(ZipArchiveEntry entry)
-    {
-        return entry.FullName.EndsWith('/');
-    }
-
-    protected bool IsConfig(ZipArchiveEntry entry)
-    {
-        return !IsDirectory(entry) && entry.FullName.StartsWith("config/");
-    }
-
-    protected bool IsCore(ZipArchiveEntry entry)
-    {
-        return !IsDirectory(entry) && entry.FullName.StartsWith("core/");
-    }
-
-    protected bool IsPatcher(ZipArchiveEntry entry)
-    {
-        return !IsDirectory(entry) && entry.FullName.StartsWith("patchers/");
-    }
-
-    protected bool IsPlugin(ZipArchiveEntry entry)
-    {
-        return !IsDirectory(entry) && entry.FullName.StartsWith("plugins/");
-    }
-
-    protected string ReplacePathToken(string path, string token, string newToken)
-    {
-        var parts =
-            path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
-                .ToList();
-
-        var index = parts.IndexOf(token);
-
-        if (index < 0)
+        protected bool IsPatcher(ZipArchiveEntry entry)
         {
-            return path;
+            return !IsDirectory(entry) && entry.FullName.StartsWith("patchers/");
         }
 
-        parts.RemoveAt(index);
-        parts.Insert(index, newToken);
+        protected bool IsPlugin(ZipArchiveEntry entry)
+        {
+            return !IsDirectory(entry) && entry.FullName.StartsWith("plugins/");
+        }
 
-        return string.Join('/', parts).TrimStart('/').Replace("//", "/");
+        protected string ReplacePathToken(string path, string token, string newToken)
+        {
+            var parts =
+                path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+                    .ToList();
+
+            var index = parts.IndexOf(token);
+
+            if (index < 0)
+            {
+                return path;
+            }
+
+            parts.RemoveAt(index);
+            parts.Insert(index, newToken);
+
+            return string.Join('/', parts).TrimStart('/').Replace("//", "/");
+        }
     }
 }

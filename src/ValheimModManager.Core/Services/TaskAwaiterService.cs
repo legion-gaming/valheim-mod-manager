@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 
 using Prism.Events;
+
 using ValheimModManager.Core.Data;
 
 namespace ValheimModManager.Core.Services

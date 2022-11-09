@@ -1,9 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace ValheimModManager.Core.Utilities;
-
-public interface IZipExtractor
+namespace ValheimModManager.Core.Utilities
 {
-    Task ExtractAsync(CancellationToken cancellationToken = default);
+    public interface IZipExtractor
+    {
+        Task ExtractAsync(CancellationToken cancellationToken = default);
+    }
 }
