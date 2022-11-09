@@ -7,6 +7,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 
 using ValheimModManager.Core.Data;
+using ValheimModManager.Core.Helpers;
 using ValheimModManager.Core.Services;
 
 namespace ValheimModManager.UI.ViewModels
@@ -52,8 +53,8 @@ namespace ValheimModManager.UI.ViewModels
 
         private void StartModded() // Todo:
         {
-            var currentDirectory = Environment.CurrentDirectory;
-            var currentPath = Path.Join(currentDirectory, "profiles\\default\\BepInEx\\core\\BepInEx.Preloader.dll");
+            var currentDirectory = PathHelper.GetBepInExCoreBasePath("default"); // Todo:
+            var currentPath = Path.Combine(currentDirectory, "BepInEx.Preloader.dll");
 
             var arguments =
                 new[]
