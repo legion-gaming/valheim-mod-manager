@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
+
 using ValheimModManager.Core.Data;
 using ValheimModManager.Core.Services;
 using ValheimModManager.Core.ViewModels;

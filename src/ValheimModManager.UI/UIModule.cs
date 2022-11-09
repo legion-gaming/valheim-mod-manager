@@ -1,6 +1,7 @@
 ﻿using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Regions;
+
 using ValheimModManager.Core.Data;
 using ValheimModManager.UI.Views;
 
