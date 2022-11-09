@@ -37,7 +37,7 @@ namespace ValheimModManager.Core.Services
             await foreach (var install in installManifest.WithCancellation(cancellationToken))
             {
                 var zipArchive = await _thunderstoreService.DownloadModAsync(install.Url, cancellationToken);
-                var zipExtractorFactory = new ZipExtractorFactory(zipArchive, $"profiles/{profileName}");
+                var zipExtractorFactory = new ZipExtractorFactory(zipArchive, PathHelper.GetProfileBasePath(profileName));
                 var zipExtractor = zipExtractorFactory.Create(install.DependencyString);
 
                 await zipExtractor.ExtractAsync(cancellationToken);
@@ -59,7 +59,7 @@ namespace ValheimModManager.Core.Services
                     )
                     .ToList();
 
-            using (var profileStream = File.Open($@"profiles\{profileName}\profile.json", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var profileStream = File.Open(PathHelper.GetProfilePath(profileName), FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
                 if (profileStream.Length == 0)
                 {
@@ -99,7 +99,10 @@ namespace ValheimModManager.Core.Services
             {
                 try
                 {
-                    Directory.Delete($"profiles/{profileName}/BepInEx/plugins/{install.Name}-{install.Author}", true);
+                    var folder = PathHelper.GetBepInExPluginBasePath(profileName);
+                    folder = Path.Combine(folder, $"{install.Name}-{install.Author}");
+
+                    Directory.Delete(folder, true);
                 }
                 catch
                 {
@@ -122,7 +125,7 @@ namespace ValheimModManager.Core.Services
                     )
                     .ToList();
 
-            using (var profileStream = File.Open($@"profiles\{profileName}\profile.json", FileMode.Truncate, FileAccess.Write))
+            using (var profileStream = File.Open(PathHelper.GetProfilePath(profileName), FileMode.Truncate, FileAccess.Write))
             {
                 profileStream.Seek(0, SeekOrigin.Begin);
 

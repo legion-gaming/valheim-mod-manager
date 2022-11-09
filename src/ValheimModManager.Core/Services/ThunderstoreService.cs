@@ -49,12 +49,12 @@ namespace ValheimModManager.Core.Services
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!File.Exists(@$"profiles\{profileName}\profile.json"))
+            if (!File.Exists(PathHelper.GetProfilePath(profileName)))
             {
                 return new List<ThunderstoreModVersion>();
             }
 
-            using (var profileStream = File.Open(@$"profiles\{profileName}\profile.json", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var profileStream = File.Open(PathHelper.GetProfilePath(profileName), FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
                 if (profileStream.Length == 0)
                 {

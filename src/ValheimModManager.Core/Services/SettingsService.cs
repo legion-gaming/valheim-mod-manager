@@ -11,8 +11,6 @@ namespace ValheimModManager.Core.Services
 {
     public class SettingsService : ISettingsService
     {
-        private const string Path = "settings.json";
-
         private readonly ITaskAwaiterService _taskAwaiterService;
         private readonly Func<Task<IDictionary<string, object>>> _factoryDelegate;
 
@@ -39,12 +37,12 @@ namespace ValheimModManager.Core.Services
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!File.Exists(Path))
+            if (!File.Exists(PathHelper.GetSettingsPath()))
             {
                 return new Dictionary<string, object>();
             }
 
-            using (var settingsFile = File.Open(Path, FileMode.Open, FileAccess.Read))
+            using (var settingsFile = File.Open(PathHelper.GetSettingsPath(), FileMode.Open, FileAccess.Read))
             {
                 var test =
                     await JsonSerializer.DeserializeAsync<IDictionary<string, object>>
@@ -63,9 +61,9 @@ namespace ValheimModManager.Core.Services
 
             using
             (
-                var fileStream = !File.Exists(Path)
-                    ? File.Open(Path, FileMode.CreateNew, FileAccess.Write)
-                    : File.Open(Path, FileMode.Truncate, FileAccess.ReadWrite)
+                var fileStream = !File.Exists(PathHelper.GetSettingsPath())
+                    ? File.Open(PathHelper.GetSettingsPath(), FileMode.CreateNew, FileAccess.Write)
+                    : File.Open(PathHelper.GetSettingsPath(), FileMode.Truncate, FileAccess.ReadWrite)
             )
             {
                 await JsonSerializer.SerializeAsync
