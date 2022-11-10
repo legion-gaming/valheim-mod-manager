@@ -150,7 +150,7 @@ namespace ValheimModManager.Pages.ViewModels
             ItemCount = mods.Count;
 
             var profiles =
-                _settingsService.Get(nameof(Profiles), new List<string>());
+                RunAsync(() => _settingsService.GetAsync(nameof(Profiles), new List<string>()));
 
             Profiles.Clear();
 
@@ -207,7 +207,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private void Download(ThunderstoreModVersion mod)
         {
-            RunAsync(_installerService.InstallAsync("default", mod.FullName, false), notifyStatus: true);
+            RunAsync(_installerService.InstallAsync(SelectedProfile, mod.FullName, false), notifyStatus: true);
         }
 
         private bool CanDownload(ThunderstoreModVersion mod)
@@ -217,7 +217,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private void DownloadWithoutDependencies(ThunderstoreModVersion mod)
         {
-            RunAsync(_installerService.InstallAsync("default", mod.FullName, true), notifyStatus: true);
+            RunAsync(_installerService.InstallAsync(SelectedProfile, mod.FullName, true), notifyStatus: true);
         }
     }
 }

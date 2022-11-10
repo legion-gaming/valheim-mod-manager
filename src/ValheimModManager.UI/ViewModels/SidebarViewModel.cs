@@ -23,7 +23,8 @@ namespace ValheimModManager.UI.ViewModels
             ILogger<SidebarViewModel> logger,
             IRegionManager regionManager,
             ISettingsService settingsService,
-            ITaskAwaiterService taskAwaiterService
+            ITaskAwaiterService taskAwaiterService,
+            IProfileService profileService
         ) : base(logger, regionManager, taskAwaiterService)
         {
             _settingsService = settingsService;

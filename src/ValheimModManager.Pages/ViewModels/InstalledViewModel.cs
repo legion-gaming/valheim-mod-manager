@@ -67,7 +67,7 @@ namespace ValheimModManager.Pages.ViewModels
             {
                 _profileService.SetSelectedProfile(value);
                 RaisePropertyChanged();
-                _taskAwaiterService.Await(LoadDataAsync());
+                RunAsync(LoadDataAsync());
             }
         }
 
@@ -122,7 +122,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         public override void OnNavigatedTo(NavigationContext navigationContext)
         {
-            var profiles = _settingsService.Get(nameof(Profiles), new List<string>());
+            var profiles = RunAsync(() => _settingsService.GetAsync(nameof(Profiles), new List<string>()));
 
             foreach (var profile in profiles)
             {

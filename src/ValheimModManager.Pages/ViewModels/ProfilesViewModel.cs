@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows.Input;
+
+using Microsoft.Extensions.Logging;
 
 using Prism.Commands;
 using Prism.Regions;
@@ -12,22 +13,21 @@ using ValheimModManager.Core.ViewModels;
 
 namespace ValheimModManager.Pages.ViewModels
 {
-    public class ProfilesViewModel : RegionViewModelBase
+    public class ProfilesViewModel : RegionViewModelBase<ProfilesViewModel>
     {
         private readonly ISettingsService _settingsService;
-        private readonly ITaskAwaiterService _taskAwaiterService;
 
         private string _profileName;
 
         public ProfilesViewModel
         (
+            ILogger<ProfilesViewModel> logger,
             IRegionManager regionManager,
             ISettingsService settingsService,
             ITaskAwaiterService taskAwaiterService
-        ) : base(regionManager)
+        ) : base(logger, regionManager, taskAwaiterService)
         {
             _settingsService = settingsService;
-            _taskAwaiterService = taskAwaiterService;
 
             Profiles = new ObservableCollection<string>();
 
@@ -52,7 +52,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private void LoadData()
         {
-            var profiles = _settingsService.Get(nameof(Profiles), new List<string>{"default"});
+            var profiles = RunAsync(() => _settingsService.GetAsync(nameof(Profiles), new List<string>{"default"}));
 
             Profiles.Clear();
 
@@ -69,8 +69,7 @@ namespace ValheimModManager.Pages.ViewModels
         {
             Profiles.Add(ProfileName);
 
-            _settingsService.Set(nameof(Profiles), Profiles);
-            _taskAwaiterService.Await(_settingsService.SaveAsync());
+            RunAsync(_settingsService.SetAsync(nameof(Profiles), Profiles));
 
             CreateCommand.RaiseCanExecuteChanged();
             DeleteCommand.RaiseCanExecuteChanged();
@@ -78,7 +77,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private bool CanCreate()
         {
-            var profiles = _settingsService.Get(nameof(Profiles), Enumerable.Empty<string>());
+            var profiles = RunAsync(() => _settingsService.GetAsync(nameof(Profiles), Enumerable.Empty<string>()));
 
             return !profiles.Contains(ProfileName, StringComparer.OrdinalIgnoreCase);
         }
@@ -87,8 +86,7 @@ namespace ValheimModManager.Pages.ViewModels
         {
             Profiles.Remove(ProfileName);
 
-            _settingsService.Set(nameof(Profiles), Profiles);
-            _taskAwaiterService.Await(_settingsService.SaveAsync());
+            RunAsync(_settingsService.SetAsync(nameof(Profiles), Profiles));
 
             CreateCommand.RaiseCanExecuteChanged();
             DeleteCommand.RaiseCanExecuteChanged();
