@@ -1,26 +1,18 @@
 ﻿using System.Threading.Tasks;
 
-using Microsoft.Extensions.Logging;
-
 using Prism.Events;
+using Prism.Mvvm;
 
 using ValheimModManager.Core.Data;
-using ValheimModManager.Core.Services;
-using ValheimModManager.Core.ViewModels;
 
 namespace ValheimModManager.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase<MainWindowViewModel>
+    public class MainWindowViewModel : BindableBase
     {
         private string _title = "Valheim Mod Manager";
         private bool _isDownloading;
 
-        public MainWindowViewModel
-        (
-            ILogger<MainWindowViewModel> logger,
-            IEventAggregator eventAggregator,
-            ITaskAwaiterService taskAwaiterService
-        ) : base(logger, taskAwaiterService)
+        public MainWindowViewModel(IEventAggregator eventAggregator)
         {
             eventAggregator.GetEvent<TaskStatusEvent>()
                 .Subscribe(SetIsDownloading, ThreadOption.UIThread);
