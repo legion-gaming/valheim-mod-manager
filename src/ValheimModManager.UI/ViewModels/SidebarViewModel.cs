@@ -16,11 +16,13 @@ namespace ValheimModManager.UI.ViewModels
     {
         private readonly IRegionManager _regionManager;
         private readonly ISettingsService _settingsService;
+        private readonly IProfileService _profileService;
 
-        public SidebarViewModel(IRegionManager regionManager, ISettingsService settingsService)
+        public SidebarViewModel(IRegionManager regionManager, ISettingsService settingsService, IProfileService profileService)
         {
             _regionManager = regionManager;
             _settingsService = settingsService;
+            _profileService = profileService;
 
             StartModdedCommand = new DelegateCommand(StartModded);
             StartVanillaCommand = new DelegateCommand(StartVanilla);
@@ -53,7 +55,7 @@ namespace ValheimModManager.UI.ViewModels
 
         private void StartModded() // Todo:
         {
-            var currentDirectory = PathHelper.GetBepInExCoreBasePath("default"); // Todo:
+            var currentDirectory = PathHelper.GetBepInExCoreBasePath(_profileService.GetSelectedProfile());
             var currentPath = Path.Combine(currentDirectory, "BepInEx.Preloader.dll");
 
             var arguments =

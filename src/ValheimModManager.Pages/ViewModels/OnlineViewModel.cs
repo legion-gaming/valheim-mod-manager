@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,6 +20,8 @@ namespace ValheimModManager.Pages.ViewModels
         private readonly IInstallerService _installerService;
         private readonly ITaskAwaiterService _taskAwaiterService;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IProfileService _profileService;
+        private readonly ISettingsService _settingsService;
 
         private int _page = -1;
         private int _pageSize = 10;
@@ -31,7 +35,9 @@ namespace ValheimModManager.Pages.ViewModels
             IThunderstoreService thunderstoreService,
             IInstallerService installerService,
             ITaskAwaiterService taskAwaiterService,
-            IEventAggregator eventAggregator
+            IEventAggregator eventAggregator,
+            IProfileService profileService,
+            ISettingsService settingsService
         )
             : base(regionManager)
         {
@@ -39,8 +45,10 @@ namespace ValheimModManager.Pages.ViewModels
             _installerService = installerService;
             _taskAwaiterService = taskAwaiterService;
             _eventAggregator = eventAggregator;
+            _profileService = profileService;
+            _settingsService = settingsService;
 
-            Profiles = new ObservableLookup<string, ThunderstoreMod>("Online"); // Todo:
+            Profiles = new ObservableLookup<string, ThunderstoreMod>(); // Todo:
 
             PreviousCommand = new DelegateCommand(Previous, CanGoPrevious);
             NextCommand = new DelegateCommand(Next, CanGoNext);
@@ -53,6 +61,16 @@ namespace ValheimModManager.Pages.ViewModels
         public DelegateCommand NextCommand { get; }
         public DelegateCommand<ThunderstoreModVersion> DownloadCommand { get; }
         public DelegateCommand<ThunderstoreModVersion> DownloadWithoutDependenciesCommand { get; }
+
+        public string SelectedProfile
+        {
+            get { return _profileService.GetSelectedProfile(); }
+            set
+            {
+                _profileService.SetSelectedProfile(value);
+                RaisePropertyChanged();
+            }
+        }
 
         public int Page
         {
@@ -120,18 +138,26 @@ namespace ValheimModManager.Pages.ViewModels
             Page = 1;
         }
 
-        private async Task LoadDataAsync() // Todo: refactor
+        private async Task LoadDataAsync()
         {
             var modCache = await _thunderstoreService.GetModsAsync();
             var mods = modCache.Where(Filter).ToList();
 
             ItemCount = mods.Count;
 
-            Profiles["Online"].Clear();
+            var profiles =
+                _settingsService.Get(nameof(Profiles), new List<string>());
 
-            foreach (var mod in mods.Skip((Page - 1) * PageSize).Take(PageSize))
+            Profiles.Clear();
+
+            foreach (var profile in profiles)
             {
-                Profiles["Online"].Add(mod);
+                Profiles.Add(profile, new ObservableCollection<ThunderstoreMod>());
+
+                foreach (var mod in mods.Skip((Page - 1) * PageSize).Take(PageSize))
+                {
+                    Profiles[profile].Add(mod);
+                }
             }
 
             PreviousCommand.RaiseCanExecuteChanged();
@@ -177,7 +203,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private void Download(ThunderstoreModVersion mod)
         {
-            _taskAwaiterService.Await(_installerService.InstallAsync("default", mod.FullName, false), showProgress: true); // Todo:
+            _taskAwaiterService.Await(_installerService.InstallAsync(SelectedProfile, mod.FullName, false), showProgress: true); // Todo:
         }
 
         private bool CanDownload(ThunderstoreModVersion mod)
@@ -187,7 +213,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private void DownloadWithoutDependencies(ThunderstoreModVersion mod)
         {
-            _taskAwaiterService.Await(_installerService.InstallAsync("default", mod.FullName, true), showProgress: true); // Todo:
+            _taskAwaiterService.Await(_installerService.InstallAsync(SelectedProfile, mod.FullName, true), showProgress: true); // Todo:
         }
     }
 }

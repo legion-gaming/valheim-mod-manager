@@ -25,7 +25,9 @@
         <TabControl
             Grid.Row="1"
             ItemsSource="{Binding Profiles}"
-            SelectedIndex="0">
+            SelectedIndex="0"
+            SelectedValue="{Binding SelectedProfile, Mode=TwoWay}"
+            SelectedValuePath="Key">
             <TabControl.ItemTemplate>
                 <DataTemplate>
                     <TextBlock

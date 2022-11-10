@@ -29,9 +29,11 @@ namespace ValheimModManager.Pages
             containerRegistry.RegisterSingleton<ITaskAwaiterService, TaskAwaiterService>();
             containerRegistry.RegisterSingleton<IInstallerService, InstallerService>();
             containerRegistry.RegisterSingleton<ISettingsService, SettingsService>();
+            containerRegistry.RegisterSingleton<IProfileService, ProfileService>();
 
             containerRegistry.RegisterForNavigation<Installed>();
             containerRegistry.RegisterForNavigation<Online>();
+            containerRegistry.RegisterForNavigation<Profiles>();
             containerRegistry.RegisterForNavigation<Settings>();
         }
     }
