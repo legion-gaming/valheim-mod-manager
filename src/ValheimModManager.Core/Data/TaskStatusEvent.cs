@@ -1,9 +1,10 @@
-﻿using Prism.Events;
+﻿using System.Threading.Tasks;
+
+using Prism.Events;
 
 namespace ValheimModManager.Core.Data
 {
-    public class TaskStatusEvent : PubSubEvent<TaskStatusEvent>
+    public class TaskStatusEvent : PubSubEvent<Task>
     {
-        public bool IsCompleted { get; set; }
     }
 }

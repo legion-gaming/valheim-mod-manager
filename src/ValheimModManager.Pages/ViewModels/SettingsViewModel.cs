@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Microsoft.Extensions.Logging;
 
 using Prism.Commands;
 using Prism.Regions;
@@ -8,20 +8,22 @@ using ValheimModManager.Core.ViewModels;
 
 namespace ValheimModManager.Pages.ViewModels
 {
-    public class SettingsViewModel : RegionViewModelBase
+    public class SettingsViewModel : RegionViewModelBase<SettingsViewModel>
     {
         private readonly ISettingsService _settingsService;
-        private readonly ITaskAwaiterService _taskAwaiterService;
+
+        private string _steamLocation;
+        private string _additionalSteamArguments;
 
         public SettingsViewModel
         (
+            ILogger<SettingsViewModel> logger,
             IRegionManager regionManager,
             ISettingsService settingsService,
             ITaskAwaiterService taskAwaiterService
-        ) : base(regionManager)
+        ) : base(logger, regionManager, taskAwaiterService)
         {
             _settingsService = settingsService;
-            _taskAwaiterService = taskAwaiterService;
 
             SaveCommand = new DelegateCommand(Save);
         }
@@ -30,36 +32,26 @@ namespace ValheimModManager.Pages.ViewModels
 
         public string SteamLocation
         {
-            get { return Get(defaultValue: ""); }
-            set { Set(value); }
+            get { return _steamLocation; }
+            set { SetProperty(ref _steamLocation, value); }
         }
 
         public string AdditionalSteamArguments
         {
-            get { return Get(defaultValue: string.Empty); }
-            set { Set(value); }
+            get { return _additionalSteamArguments; }
+            set { SetProperty(ref _additionalSteamArguments, value); }
         }
 
         public override void OnNavigatedTo(NavigationContext navigationContext)
         {
-            RaisePropertyChanged(nameof(SteamLocation));
-            RaisePropertyChanged(nameof(AdditionalSteamArguments));
+            SteamLocation = RunAsync(() => _settingsService.GetAsync(nameof(SteamLocation), string.Empty));
+            AdditionalSteamArguments = RunAsync(() => _settingsService.GetAsync(nameof(AdditionalSteamArguments), string.Empty));
         }
 
         private void Save()
         {
-            _taskAwaiterService.Await(_settingsService.SaveAsync());
-        }
-
-        private T Get<T>([CallerMemberName] string propertyName = null, T defaultValue = default)
-        {
-            return _settingsService.Get(propertyName, defaultValue);
-        }
-
-        private void Set<T>(T value, [CallerMemberName] string propertyName = null)
-        {
-            _settingsService.Set(propertyName, value);
-            RaisePropertyChanged(propertyName);
+            RunAsync(_settingsService.SetAsync(nameof(SteamLocation), SteamLocation));
+            RunAsync(_settingsService.SetAsync(nameof(AdditionalSteamArguments), AdditionalSteamArguments));
         }
     }
 }

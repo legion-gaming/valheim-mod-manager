@@ -3,6 +3,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Prism.Commands;
 using Prism.Regions;
 
@@ -12,10 +14,9 @@ using ValheimModManager.Core.ViewModels;
 
 namespace ValheimModManager.Pages.ViewModels
 {
-    public class InstalledViewModel : RegionViewModelBase // Todo: adjust
+    public class InstalledViewModel : RegionViewModelBase<InstalledViewModel> // Todo: adjust
     {
         private readonly IThunderstoreService _thunderstoreService;
-        private readonly ITaskAwaiterService _taskAwaiterService;
         private readonly IInstallerService _installerService;
 
         private int _page = -1;
@@ -25,14 +26,14 @@ namespace ValheimModManager.Pages.ViewModels
 
         public InstalledViewModel
         (
+            ILogger<InstalledViewModel> logger,
             IRegionManager regionManager,
             IThunderstoreService thunderstoreService,
             ITaskAwaiterService taskAwaiterService,
             IInstallerService installerService
-        ) : base(regionManager)
+        ) : base(logger, regionManager, taskAwaiterService)
         {
             _thunderstoreService = thunderstoreService;
-            _taskAwaiterService = taskAwaiterService;
             _installerService = installerService;
 
             Profiles = new ObservableLookup<string, ThunderstoreMod>("Installed"); // Todo:
@@ -57,7 +58,7 @@ namespace ValheimModManager.Pages.ViewModels
             set
             {
                 SetProperty(ref _page, value);
-                _taskAwaiterService.Await(LoadDataAsync());
+                RunAsync(LoadDataAsync());
                 PreviousCommand.RaiseCanExecuteChanged();
                 NextCommand.RaiseCanExecuteChanged();
             }
@@ -171,12 +172,12 @@ namespace ValheimModManager.Pages.ViewModels
 
         private void Uninstall(ThunderstoreMod mod)
         {
-            _taskAwaiterService.Await(UninstallAsync(mod, false)); // Todo:
+            RunAsync(UninstallAsync(mod, false));
         }
 
         private void UninstallWithoutDependencies(ThunderstoreMod mod)
         {
-            _taskAwaiterService.Await(UninstallAsync(mod, true)); // Todo:
+            RunAsync(UninstallAsync(mod, true));
         }
 
         private async Task UninstallAsync(ThunderstoreMod mod, bool skipDependencies, CancellationToken cancellationToken = default)

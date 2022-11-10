@@ -1,18 +1,29 @@
-﻿using Prism.Events;
-using Prism.Mvvm;
+﻿using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
+using Prism.Events;
 
 using ValheimModManager.Core.Data;
+using ValheimModManager.Core.Services;
+using ValheimModManager.Core.ViewModels;
 
 namespace ValheimModManager.ViewModels
 {
-    public class MainWindowViewModel : BindableBase
+    public class MainWindowViewModel : ViewModelBase<MainWindowViewModel>
     {
         private string _title = "Valheim Mod Manager";
         private bool _isDownloading;
 
-        public MainWindowViewModel(IEventAggregator eventAggregator)
+        public MainWindowViewModel
+        (
+            ILogger<MainWindowViewModel> logger,
+            IEventAggregator eventAggregator,
+            ITaskAwaiterService taskAwaiterService
+        ) : base(logger, taskAwaiterService)
         {
-            eventAggregator.GetEvent<TaskStatusEvent>().Subscribe(status => IsDownloading = !status.IsCompleted);
+            eventAggregator.GetEvent<TaskStatusEvent>()
+                .Subscribe(SetIsDownloading, ThreadOption.UIThread);
         }
 
         public string Title
@@ -25,6 +36,11 @@ namespace ValheimModManager.ViewModels
         {
             get { return _isDownloading; }
             set { SetProperty(ref _isDownloading, value); }
+        }
+
+        private void SetIsDownloading(Task task)
+        {
+            IsDownloading = !task.IsCompleted;
         }
     }
 }
