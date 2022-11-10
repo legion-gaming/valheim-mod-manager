@@ -1,13 +1,22 @@
 ﻿using System;
 
+using Microsoft.Extensions.Logging;
+
 using Prism.Regions;
+
+using ValheimModManager.Core.Services;
 
 namespace ValheimModManager.Core.ViewModels
 {
-    public class RegionViewModelBase : ViewModelBase, IConfirmNavigationRequest
+    public class RegionViewModelBase<TViewModel> : ViewModelBase<TViewModel>, IConfirmNavigationRequest
+        where TViewModel : ViewModelBase<TViewModel>
     {
-
-        public RegionViewModelBase(IRegionManager regionManager)
+        public RegionViewModelBase
+        (
+            ILogger<TViewModel> logger,
+            IRegionManager regionManager,
+            ITaskAwaiterService taskAwaiterService
+        ) : base(logger, taskAwaiterService)
         {
             RegionManager = regionManager;
         }

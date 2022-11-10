@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Prism.Events;
 
 using ValheimModManager.Core.Data;
@@ -9,61 +11,53 @@ namespace ValheimModManager.Core.Services
 {
     public class TaskAwaiterService : ITaskAwaiterService
     {
+        private readonly ILogger<TaskAwaiterService> _logger;
         private readonly IEventAggregator _eventAggregator;
 
-        public TaskAwaiterService(IEventAggregator eventAggregator)
+        public TaskAwaiterService(ILogger<TaskAwaiterService> logger, IEventAggregator eventAggregator)
         {
+            _logger = logger;
             _eventAggregator = eventAggregator;
         }
 
-        public async void Await(Task task, Action<Exception> errorCallback = null, bool showProgress = false)
+        public void Await(Task task, Action<Exception> errorCallback = null, bool notifyStatus = false)
+        {
+            AwaitInternal(task, errorCallback, notifyStatus);
+        }
+
+        public T Await<T>(Func<Task<T>> task, Action<Exception> errorCallback = null, bool notifyStatus = false)
+        {
+            var unwrappedTask = Task.Factory.StartNew(task).Unwrap();
+
+            AwaitInternal(unwrappedTask, errorCallback, notifyStatus);
+
+            return unwrappedTask.Result;
+        }
+
+        private async void AwaitInternal(Task task, Action<Exception> errorCallback, bool notifyStatus)
         {
             try
             {
-                if (showProgress)
+                if (notifyStatus)
                 {
-                    _eventAggregator.GetEvent<TaskStatusEvent>().Publish(new TaskStatusEvent());
+                    _eventAggregator.GetEvent<TaskStatusEvent>().Publish(task);
                 }
 
                 await task;
             }
             catch (Exception error)
             {
+                _logger.LogError(error, error.Message);
+
                 errorCallback?.Invoke(error);
             }
             finally
             {
-                if (showProgress)
+                if (notifyStatus)
                 {
-                    _eventAggregator.GetEvent<TaskStatusEvent>().Publish(new TaskStatusEvent { IsCompleted = true });
+                    _eventAggregator.GetEvent<TaskStatusEvent>().Publish(task);
                 }
             }
-        }
-
-        public T Await<T>(Func<Task<T>> task, Action<Exception> errorCallback = null, bool showProgress = false)
-        {
-            try
-            {
-                if (showProgress)
-                {
-                    _eventAggregator.GetEvent<TaskStatusEvent>().Publish(new TaskStatusEvent());
-                }
-
-                return Task.Factory.StartNew(task).Unwrap().GetAwaiter().GetResult();
-            }
-            catch (Exception error)
-            {
-                errorCallback?.Invoke(error);
-            }
-            finally
-            {
-                if (showProgress)
-                {
-                    _eventAggregator.GetEvent<TaskStatusEvent>().Publish(new TaskStatusEvent { IsCompleted = true });
-                }
-            }
-
-            return default;
         }
     }
 }

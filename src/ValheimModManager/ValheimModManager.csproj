@@ -11,12 +11,19 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.1.0" />
     <PackageReference Include="Prism.Unity" Version="8.1.97" />
+    <PackageReference Include="Unity.Microsoft.Logging" Version="5.11.1" />
     <PackageReference Include="WPF-UI" Version="2.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ValheimModManager.Core\ValheimModManager.Core.csproj" />
     <ProjectReference Include="..\ValheimModManager.Pages\ValheimModManager.Pages.csproj" />
     <ProjectReference Include="..\ValheimModManager.UI\ValheimModManager.UI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="nlog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

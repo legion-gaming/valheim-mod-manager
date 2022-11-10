@@ -63,7 +63,15 @@ namespace ValheimModManager.Core.Helpers
 
         private static string GetBasePath()
         {
+            #if DEBUG
+
+            var basePath = Environment.CurrentDirectory;
+
+            #else
+
             var basePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+            #endif
 
             return Path.Combine(basePath, "ValheimModManager");
         }

@@ -11,29 +11,47 @@ namespace ValheimModManager.Core.Services
 {
     public class SettingsService : ISettingsService
     {
-        private readonly ITaskAwaiterService _taskAwaiterService;
         private readonly Func<Task<IDictionary<string, object>>> _factoryDelegate;
 
         private AsyncLazy<IDictionary<string, object>> _settings;
 
-        public SettingsService(ITaskAwaiterService taskAwaiterService)
+        public SettingsService()
         {
-            _taskAwaiterService = taskAwaiterService;
             _factoryDelegate = () => LoadAsync();
             _settings = new AsyncLazy<IDictionary<string, object>>(_factoryDelegate);
         }
 
-        public T Get<T>(string key, T defaultValue = default)
+        public async Task<T> GetAsync<T>(string key, T defaultValue = default, CancellationToken cancellationToken = default)
         {
-            return _taskAwaiterService.Await(() => GetAsync(key, defaultValue));
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var settings = await _settings.Value;
+
+            if (!settings.TryGetValue(key, out var value))
+            {
+                return defaultValue;
+            }
+
+            if (value is JsonElement jsonElement)
+            {
+                return jsonElement.Deserialize<T>();
+            }
+
+            return (T)value;
         }
 
-        public void Set<T>(string key, T value)
+        public async Task SetAsync<T>(string key, T value, CancellationToken cancellationToken = default)
         {
-            _taskAwaiterService.Await(SetAsync(key, value));
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var settings = await _settings.Value;
+
+            settings[key] = value;
+
+            await SaveAsync(cancellationToken);
         }
 
-        public async Task<IDictionary<string, object>> LoadAsync(CancellationToken cancellationToken = default)
+        private async Task<IDictionary<string, object>> LoadAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -55,7 +73,7 @@ namespace ValheimModManager.Core.Services
             }
         }
 
-        public async Task SaveAsync(CancellationToken cancellationToken = default)
+        private async Task SaveAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -75,34 +93,6 @@ namespace ValheimModManager.Core.Services
             }
 
             _settings = new AsyncLazy<IDictionary<string, object>>(_factoryDelegate);
-        }
-
-        private async Task<T> GetAsync<T>(string key, T defaultValue = default, CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var settings = await _settings.Value;
-
-            if (!settings.TryGetValue(key, out var value))
-            {
-                return defaultValue;
-            }
-
-            if (value is JsonElement jsonElement)
-            {
-                return jsonElement.Deserialize<T>();
-            }
-
-            return (T)value;
-        }
-
-        private async Task SetAsync<T>(string key, T value, CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var settings = await _settings.Value;
-
-            settings[key] = value;
         }
     }
 }
