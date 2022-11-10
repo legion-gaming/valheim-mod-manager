@@ -1,25 +1,30 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 
+using Microsoft.Extensions.Logging;
+
 using Prism.Commands;
-using Prism.Mvvm;
 using Prism.Regions;
 
 using ValheimModManager.Core.Data;
 using ValheimModManager.Core.Helpers;
 using ValheimModManager.Core.Services;
+using ValheimModManager.Core.ViewModels;
 
 namespace ValheimModManager.UI.ViewModels
 {
-    public class SidebarViewModel : BindableBase
+    public class SidebarViewModel : RegionViewModelBase<SidebarViewModel>
     {
-        private readonly IRegionManager _regionManager;
         private readonly ISettingsService _settingsService;
 
-        public SidebarViewModel(IRegionManager regionManager, ISettingsService settingsService)
+        public SidebarViewModel
+        (
+            ILogger<SidebarViewModel> logger,
+            IRegionManager regionManager,
+            ISettingsService settingsService,
+            ITaskAwaiterService taskAwaiterService
+        ) : base(logger, regionManager, taskAwaiterService)
         {
-            _regionManager = regionManager;
             _settingsService = settingsService;
 
             StartModdedCommand = new DelegateCommand(StartModded);
@@ -33,17 +38,17 @@ namespace ValheimModManager.UI.ViewModels
 
         public string SteamLocation
         {
-            get { return _settingsService.Get(nameof(SteamLocation), string.Empty); }
+            get { return RunAsync(() => _settingsService.GetAsync(nameof(SteamLocation), string.Empty)); }
         }
 
         public string AdditionalSteamArguments
         {
-            get { return _settingsService.Get(nameof(AdditionalSteamArguments), string.Empty); }
+            get { return RunAsync(() => _settingsService.GetAsync(nameof(AdditionalSteamArguments), string.Empty)); }
         }
 
         private void Navigate(string path)
         {
-            _regionManager.RequestNavigate(RegionName.Page, path);
+            RegionManager.RequestNavigate(RegionName.Page, path);
         }
 
         private bool CanNavigate(string path)

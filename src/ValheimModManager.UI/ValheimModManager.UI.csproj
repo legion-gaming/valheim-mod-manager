@@ -4,7 +4,9 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.1.0" />
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+    <PackageReference Include="Unity.Microsoft.Logging" Version="5.11.1" />
     <PackageReference Include="WPF-UI" Version="2.0.3" />
   </ItemGroup>
   <ItemGroup>

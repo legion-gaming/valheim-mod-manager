@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
@@ -12,11 +14,10 @@ using ValheimModManager.Core.ViewModels;
 
 namespace ValheimModManager.Pages.ViewModels
 {
-    public class OnlineViewModel : RegionViewModelBase
+    public class OnlineViewModel : RegionViewModelBase<OnlineViewModel>
     {
         private readonly IThunderstoreService _thunderstoreService;
         private readonly IInstallerService _installerService;
-        private readonly ITaskAwaiterService _taskAwaiterService;
         private readonly IEventAggregator _eventAggregator;
 
         private int _page = -1;
@@ -27,17 +28,16 @@ namespace ValheimModManager.Pages.ViewModels
 
         public OnlineViewModel
         (
+            ILogger<OnlineViewModel> logger,
             IRegionManager regionManager,
             IThunderstoreService thunderstoreService,
             IInstallerService installerService,
             ITaskAwaiterService taskAwaiterService,
             IEventAggregator eventAggregator
-        )
-            : base(regionManager)
+        ) : base(logger, regionManager, taskAwaiterService)
         {
             _thunderstoreService = thunderstoreService;
             _installerService = installerService;
-            _taskAwaiterService = taskAwaiterService;
             _eventAggregator = eventAggregator;
 
             Profiles = new ObservableLookup<string, ThunderstoreMod>("Online"); // Todo:
@@ -60,7 +60,7 @@ namespace ValheimModManager.Pages.ViewModels
             set
             {
                 SetProperty(ref _page, value);
-                _taskAwaiterService.Await(LoadDataAsync());
+                RunAsync(LoadDataAsync());
                 PreviousCommand.RaiseCanExecuteChanged();
                 NextCommand.RaiseCanExecuteChanged();
             }
@@ -111,11 +111,15 @@ namespace ValheimModManager.Pages.ViewModels
 
         public override void OnNavigatedTo(NavigationContext navigationContext)
         {
-            _eventAggregator.GetEvent<TaskStatusEvent>().Subscribe(status =>
-            {
-                CanDownloadMod = status.IsCompleted;
-                DownloadCommand.RaiseCanExecuteChanged();
-            });
+            _eventAggregator.GetEvent<TaskStatusEvent>()
+                .Subscribe
+                (
+                    status =>
+                    {
+                        CanDownloadMod = status.IsCompleted;
+                        DownloadCommand.RaiseCanExecuteChanged();
+                    }
+                );
 
             Page = 1;
         }
@@ -177,7 +181,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private void Download(ThunderstoreModVersion mod)
         {
-            _taskAwaiterService.Await(_installerService.InstallAsync("default", mod.FullName, false), showProgress: true); // Todo:
+            RunAsync(_installerService.InstallAsync("default", mod.FullName, false), notifyStatus: true);
         }
 
         private bool CanDownload(ThunderstoreModVersion mod)
@@ -187,7 +191,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private void DownloadWithoutDependencies(ThunderstoreModVersion mod)
         {
-            _taskAwaiterService.Await(_installerService.InstallAsync("default", mod.FullName, true), showProgress: true); // Todo:
+            RunAsync(_installerService.InstallAsync("default", mod.FullName, true), notifyStatus: true);
         }
     }
 }
