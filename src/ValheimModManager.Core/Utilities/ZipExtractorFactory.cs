@@ -1,34 +1,21 @@
-﻿using System;
-using System.IO.Compression;
+﻿using System.IO.Compression;
 
-using ValheimModManager.Core.Helpers;
+using ValheimModManager.Core.Data;
 
 namespace ValheimModManager.Core.Utilities
 {
     public class ZipExtractorFactory
     {
-        private readonly ZipArchive _zipArchive;
-        private readonly string _basePath;
-
-        public ZipExtractorFactory(ZipArchive zipArchive, string basePath)
+        public IZipExtractor Create(ThunderstoreDependency dependency, ZipArchive zipArchive, string basePath)
         {
-            _zipArchive = zipArchive;
-            _basePath = basePath;
-        }
+            var manifestEntry = zipArchive.GetEntry("manifest.json")!;
 
-        public IZipExtractor Create(string dependencyString)
-        {
-            if (dependencyString.StartsWith("denikson-BepInExPack_Valheim"))
+            if (dependency.Author.Equals("denikson") && dependency.Name.Equals("BepInExPack_Valheim"))
             {
-                return new BepInExExtractor(_zipArchive, _basePath);
+                return new BepInExExtractor(zipArchive, basePath);
             }
 
-            if (!DependencyStringHelper.TryParse(dependencyString, out var mod))
-            {
-                throw new FormatException("Dependency string was not in a valid format.");
-            }
-
-            return new ThunderstoreModExtractor(_zipArchive, _basePath, $"{mod.Name}-{mod.Author}");
+            return new ThunderstoreModExtractor(zipArchive, basePath, $"{dependency.Name}-{dependency.Author}");
         }
     }
 }

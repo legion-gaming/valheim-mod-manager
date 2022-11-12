@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-using ValheimModManager.Core.Helpers;
-
 namespace ValheimModManager.Core.Data
 {
     public class ThunderstoreModVersion
@@ -12,8 +10,7 @@ namespace ValheimModManager.Core.Data
         {
             get
             {
-                DependencyStringHelper.TryParse(FullName, out var mod);
-
+                ThunderstoreDependency mod = FullName;
                 return mod.Author;
             }
         }

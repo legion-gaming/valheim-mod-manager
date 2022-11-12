@@ -17,6 +17,7 @@ namespace ValheimModManager.Pages.ViewModels
     public class InstalledViewModel : RegionViewModelBase<InstalledViewModel> // Todo: adjust
     {
         private readonly IThunderstoreService _thunderstoreService;
+        private readonly IProfileService _profileService;
         private readonly IInstallerService _installerService;
 
         private int _page = -1;
@@ -29,11 +30,13 @@ namespace ValheimModManager.Pages.ViewModels
             ILogger<InstalledViewModel> logger,
             IRegionManager regionManager,
             IThunderstoreService thunderstoreService,
+            IProfileService profileService,
             ITaskAwaiterService taskAwaiterService,
             IInstallerService installerService
         ) : base(logger, regionManager, taskAwaiterService)
         {
             _thunderstoreService = thunderstoreService;
+            _profileService = profileService;
             _installerService = installerService;
 
             Profiles = new ObservableLookup<string, ThunderstoreMod>("Installed"); // Todo:
@@ -108,7 +111,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private async Task LoadDataAsync() // Todo: refactor
         {
-            var installedMods = await _thunderstoreService.GetInstalledModsAsync("default");
+            var installedMods = await _profileService.GetInstalledModsAsync("default");
             var modCache = await _thunderstoreService.GetModsAsync();
 
             var mods =
@@ -184,7 +187,7 @@ namespace ValheimModManager.Pages.ViewModels
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var mods = await _thunderstoreService.GetInstalledModsAsync("default", cancellationToken); // Todo:
+            var mods = await _profileService.GetInstalledModsAsync("default", cancellationToken); // Todo:
             var selectedMod = mods.First(mod.Versions.Contains);
 
             await _installerService.UninstallAsync("default", selectedMod.FullName, skipDependencies, cancellationToken); // Todo:
