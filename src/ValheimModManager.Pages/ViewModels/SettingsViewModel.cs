@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
 using Prism.Commands;
+using Prism.Events;
 using Prism.Regions;
 
 using ValheimModManager.Core.Services;
@@ -20,8 +21,9 @@ namespace ValheimModManager.Pages.ViewModels
             ILogger<SettingsViewModel> logger,
             IRegionManager regionManager,
             ISettingsService settingsService,
-            ITaskAwaiterService taskAwaiterService
-        ) : base(logger, regionManager, taskAwaiterService)
+            ITaskAwaiterService taskAwaiterService,
+            IEventAggregator eventAggregator
+        ) : base(logger, regionManager, taskAwaiterService, eventAggregator)
         {
             _settingsService = settingsService;
 

@@ -142,6 +142,11 @@ namespace ValheimModManager.Core.Services
                 return;
             }
 
+            if (dependency.Author == "denikson" && dependency.Name == "BepInExPack_Valheim")
+            {
+                hashSet.Clear();
+            }
+
             using (var profileStream = File.Open(profilePath, FileMode.Truncate, FileAccess.Write))
             {
                 await JsonSerializer.SerializeAsync

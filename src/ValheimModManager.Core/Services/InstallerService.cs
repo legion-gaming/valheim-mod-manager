@@ -56,12 +56,20 @@ namespace ValheimModManager.Core.Services
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            throw new NotImplementedException(); // Todo:
+            throw new NotImplementedException(); // Todo: allow for installing from a zip
         }
 
         public async Task UninstallAsync(string profileName, ThunderstoreDependency dependency, bool skipDependencies, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (dependency.Author == "denikson" && dependency.Name == "BepInExPack_Valheim")
+            {
+                Directory.Delete(PathHelper.GetBepInExBasePath(profileName), true);
+                await _profileService.RemoveInstalledModAsync(profileName, dependency, cancellationToken);
+
+                return;
+            }
 
             var pluginPath = PathHelper.GetBepInExPluginBasePath(profileName);
             pluginPath = Path.Combine(pluginPath, $"{dependency.Name}-{dependency.Author}");

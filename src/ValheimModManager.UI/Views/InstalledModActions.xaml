@@ -3,30 +3,63 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:converters="clr-namespace:ValheimModManager.Core.Converters;assembly=ValheimModManager.Core"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
              prism:ViewModelLocator.AutoWireViewModel="False"
              x:Name="uc">
+    <UserControl.Resources>
+        <converters:GreaterThanConverter x:Key="GreaterThanConverter" />
+    </UserControl.Resources>
     <Grid>
         <StackPanel
             Orientation="Horizontal">
-            <!--<ComboBox
-                ItemsSource="{Binding Versions}"
-                DisplayMemberPath="VersionNumber"
-                FontSize="18"
-                FontWeight="Bold"
-                Margin="0, 0, 10, 0"
-                SelectedIndex="0"
-                x:Name="VersionSelector"/> // Todo:-->
+            <StackPanel Orientation="Horizontal">
+                <StackPanel.Style>
+                    <Style
+                        TargetType="StackPanel">
+                        <Setter
+                            Property="Visibility"
+                            Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger
+                                Value="true">
+                                <DataTrigger.Binding>
+                                    <Binding
+                                        ElementName="VersionSelector"
+                                        Path="Items.Count"
+                                        Converter="{StaticResource GreaterThanConverter}">
+                                        <Binding.ConverterParameter>
+                                            <system:Int32>1</system:Int32>
+                                        </Binding.ConverterParameter>
+                                    </Binding>
+                                </DataTrigger.Binding>
+                                <Setter
+                                    Property="Visibility"
+                                    Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <ComboBox
+                    ItemsSource="{Binding Versions}"
+                    SelectedItem="{Binding Version, Mode=OneWay}"
+                    DisplayMemberPath="VersionNumber"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    Margin="0, 0, 10, 0"
+                    x:Name="VersionSelector"/>
 
-            <!--<ui:Button
-                Appearance="Info"
-                Icon="ArrowCircleUp24"
-                Content="Update"
-                FontSize="18"
-                FontWeight="Bold"
-                Margin="0, 0, 10, 0"
-                Padding="9"
-                Command="{Binding ElementName=uc, Path=UpdateCommand}"
-                CommandParameter="{Binding ElementName=VersionSelector, Path=SelectedItem}" /> // Todo:-->
+                <ui:Button
+                    Appearance="Info"
+                    Icon="ArrowCircleUp24"
+                    Content="Update"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    Margin="0, 0, 10, 0"
+                    Padding="9"
+                    Command="{Binding ElementName=uc, Path=UpdateCommand}"
+                    CommandParameter="{Binding ElementName=VersionSelector, Path=SelectedItem}" />
+            </StackPanel>
 
             <ui:Button
                 Appearance="Caution"

@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Prism.Events;
 using Prism.Regions;
 
+using ValheimModManager.Core.Data;
 using ValheimModManager.Core.Services;
 
 namespace ValheimModManager.Core.ViewModels
@@ -15,8 +18,9 @@ namespace ValheimModManager.Core.ViewModels
         (
             ILogger<TViewModel> logger,
             IRegionManager regionManager,
-            ITaskAwaiterService taskAwaiterService
-        ) : base(logger, taskAwaiterService)
+            ITaskAwaiterService taskAwaiterService,
+            IEventAggregator eventAggregator
+        ) : base(logger, taskAwaiterService, eventAggregator)
         {
             RegionManager = regionManager;
         }
@@ -38,6 +42,12 @@ namespace ValheimModManager.Core.ViewModels
         }
 
         public virtual void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            EventAggregator.GetEvent<TaskStatusEvent>()
+                .Subscribe(CanExecuteTaskChanged);
+        }
+
+        public virtual void CanExecuteTaskChanged(Task task)
         {
         }
     }
