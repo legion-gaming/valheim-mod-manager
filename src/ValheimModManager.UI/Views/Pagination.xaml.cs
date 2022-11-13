@@ -9,6 +9,7 @@ namespace ValheimModManager.UI.Views
         public static readonly DependencyProperty PageProperty;
         public static readonly DependencyProperty PageCountProperty;
         public static readonly DependencyProperty PageSizeProperty;
+        public static readonly DependencyProperty SortProperty;
         public static readonly DependencyProperty ItemCountProperty;
         public static readonly DependencyProperty PreviousCommandProperty;
         public static readonly DependencyProperty NextCommandProperty;
@@ -40,6 +41,15 @@ namespace ValheimModManager.UI.Views
                     typeof(int),
                     typeof(Pagination),
                     new FrameworkPropertyMetadata(default(int), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault)
+                );
+
+            SortProperty =
+                DependencyProperty.Register
+                (
+                    nameof(Sort),
+                    typeof(string),
+                    typeof(Pagination),
+                    new FrameworkPropertyMetadata(default(string), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault)
                 );
 
             ItemCountProperty =
@@ -91,6 +101,12 @@ namespace ValheimModManager.UI.Views
         {
             get { return (int)GetValue(PageSizeProperty); }
             set { SetValue(PageSizeProperty, value); }
+        }
+
+        public string Sort
+        {
+            get { return (string)GetValue(SortProperty); }
+            set { SetValue(SortProperty, value); }
         }
 
         public int ItemCount

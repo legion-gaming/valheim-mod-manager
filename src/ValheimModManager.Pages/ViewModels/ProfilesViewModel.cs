@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,7 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Regions;
 
+using ValheimModManager.Core.Helpers;
 using ValheimModManager.Core.Services;
 using ValheimModManager.Core.ViewModels;
 
@@ -34,12 +36,12 @@ namespace ValheimModManager.Pages.ViewModels
             Profiles = new ObservableCollection<string>();
 
             CreateCommand = new DelegateCommand(Create, CanCreate);
-            DeleteCommand = new DelegateCommand(Delete, CanDelete);
+            DeleteCommand = new DelegateCommand<string>(Delete);
         }
 
         public ObservableCollection<string> Profiles { get; }
         public DelegateCommand CreateCommand { get; }
-        public DelegateCommand DeleteCommand { get; }
+        public DelegateCommand<string> DeleteCommand { get; }
 
         public string ProfileName
         {
@@ -84,19 +86,21 @@ namespace ValheimModManager.Pages.ViewModels
             return !profiles.Contains(ProfileName, StringComparer.OrdinalIgnoreCase);
         }
 
-        private void Delete()
+        private void Delete(string profileName)
         {
-            Profiles.Remove(ProfileName);
+            Profiles.Remove(profileName);
+
+            var profilePath = PathHelper.GetProfileBasePath(profileName);
+
+            if (Directory.Exists(profilePath))
+            {
+                Directory.Delete(profilePath, true);
+            }
 
             RunAsync(_settingsService.SetAsync(nameof(Profiles), Profiles));
 
             CreateCommand.RaiseCanExecuteChanged();
             DeleteCommand.RaiseCanExecuteChanged();
-        }
-
-        private bool CanDelete()
-        {
-            return true;
         }
     }
 }

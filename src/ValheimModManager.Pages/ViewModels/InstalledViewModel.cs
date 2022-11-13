@@ -27,6 +27,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private int _page = -1;
         private int _pageSize = 10;
+        private string _sort = "Last Updated";
         private int _itemCount;
         private string _search;
         private bool _canUninstallMod = true;
@@ -99,6 +100,16 @@ namespace ValheimModManager.Pages.ViewModels
             }
         }
 
+        public string Sort
+        {
+            get { return _sort; }
+            set
+            {
+                SetProperty(ref _sort, value);
+                RunAsync(LoadDataAsync());
+            }
+        }
+
         public int ItemCount
         {
             get { return _itemCount; }
@@ -136,6 +147,8 @@ namespace ValheimModManager.Pages.ViewModels
 
             var profiles = RunAsync(() => _settingsService.GetAsync(nameof(Profiles), new List<string>()));
 
+            Profiles.Clear();
+
             foreach (var profile in profiles)
             {
                 Profiles.Add(profile, new ObservableCollection<Mod>());
@@ -158,28 +171,31 @@ namespace ValheimModManager.Pages.ViewModels
             var modCache = await _thunderstoreService.GetModsAsync();
 
             var mods =
-                installedMods.Join
+                SortResults
                     (
-                        modCache,
-                        installedMod => $"{installedMod.Author}-{installedMod.Name}",
-                        onlineMod => $"{onlineMod.Owner}-{onlineMod.Name}",
-                        (installedMod, onlineMod) =>
-                        {
-                            var mod = (Mod)installedMod;
+                        installedMods.Join
+                            (
+                                modCache,
+                                installedMod => $"{installedMod.Author}-{installedMod.Name}",
+                                onlineMod => $"{onlineMod.Owner}-{onlineMod.Name}",
+                                (installedMod, onlineMod) =>
+                                {
+                                    var mod = (Mod)installedMod;
 
-                            mod.Versions =
-                                onlineMod.Versions
-                                    .Where
-                                    (
-                                        version =>
-                                            Version.Parse(version.VersionNumber) >=
-                                            Version.Parse(installedMod.VersionNumber)
-                                    );
+                                    mod.Versions =
+                                        onlineMod.Versions
+                                            .Where
+                                            (
+                                                version =>
+                                                    Version.Parse(version.VersionNumber) >=
+                                                    Version.Parse(installedMod.VersionNumber)
+                                            );
 
-                            return mod;
-                        }
+                                    return mod;
+                                }
+                            )
+                            .Where(Filter)
                     )
-                    .Where(Filter)
                     .ToList();
 
             ItemCount = mods.Count;
@@ -210,6 +226,24 @@ namespace ValheimModManager.Pages.ViewModels
             result |= mod.Description.Contains(Search);
 
             return result;
+        }
+
+        private IEnumerable<Mod> SortResults(IEnumerable<Mod> mods)
+        {
+            switch (Sort.ToLower().Replace(" ", string.Empty))
+            {
+                default:
+                    return mods;
+
+                case "lastupdated":
+                    return mods.OrderByDescending(mod => mod.LastUpdated);
+
+                case "modname":
+                    return mods.OrderBy(mod => mod.Name);
+
+                case "authorname":
+                    return mods.OrderBy(mod => mod.Author);
+            }
         }
 
         private void Previous()

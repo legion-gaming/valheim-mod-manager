@@ -26,6 +26,7 @@ namespace ValheimModManager.Pages.ViewModels
 
         private int _page = -1;
         private int _pageSize = 10;
+        private string _sort = "Last Updated";
         private int _itemCount;
         private string _search;
         private bool _canDownloadMod = true;
@@ -95,6 +96,16 @@ namespace ValheimModManager.Pages.ViewModels
             }
         }
 
+        public string Sort
+        {
+            get { return _sort; }
+            set
+            {
+                SetProperty(ref _sort, value);
+                RunAsync(LoadDataAsync());
+            }
+        }
+
         public int ItemCount
         {
             get { return _itemCount; }
@@ -144,12 +155,11 @@ namespace ValheimModManager.Pages.ViewModels
         private async Task LoadDataAsync()
         {
             var modCache = await _thunderstoreService.GetModsAsync();
-            var mods = modCache.Select(mod => (Mod)mod).Where(Filter).ToList();
+            var mods = SortResults(modCache.Select(mod => (Mod)mod).Where(Filter)).ToList();
 
             ItemCount = mods.Count;
 
-            var profiles =
-                RunAsync(() => _settingsService.GetAsync(nameof(Profiles), new List<string>()));
+            var profiles = RunAsync(() => _settingsService.GetAsync(nameof(Profiles), new List<string>()));
 
             Profiles.Clear();
 
@@ -182,6 +192,24 @@ namespace ValheimModManager.Pages.ViewModels
             result |= mod.Description.Contains(Search);
 
             return result;
+        }
+
+        private IEnumerable<Mod> SortResults(IEnumerable<Mod> mods)
+        {
+            switch (Sort.ToLower().Replace(" ", string.Empty))
+            {
+                default:
+                    return mods;
+
+                case "lastupdated":
+                    return mods.OrderByDescending(mod => mod.LastUpdated);
+
+                case "modname":
+                    return mods.OrderBy(mod => mod.Name);
+
+                case "authorname":
+                    return mods.OrderBy(mod => mod.Author);
+            }
         }
 
         private void Previous()

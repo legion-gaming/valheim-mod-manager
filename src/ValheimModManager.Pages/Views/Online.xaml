@@ -13,17 +13,27 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <TextBlock
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            FontSize="20"
+            FontWeight="Bold"
+            Margin="0, 5"
+            Text="Online Mods" />
+
         <ui:AutoSuggestBox
-                Grid.Row="0"
+                Grid.Row="1"
                 Margin="0,0, 0, 20"
+                PlaceholderText="Search for a mod..."
                 Text="{Binding Search, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
         <TabControl
-            Grid.Row="1"
+            Grid.Row="2"
             ItemsSource="{Binding Profiles}"
             SelectedIndex="0"
             SelectedValue="{Binding SelectedProfile, Mode=TwoWay}"
@@ -77,11 +87,12 @@
         </TabControl>
 
         <views:Pagination
-            Grid.Row="2"
+            Grid.Row="3"
             Margin="0, 10"
             Page="{Binding Page, Mode=TwoWay}"
             PageCount="{Binding PageCount}"
             PageSize="{Binding PageSize}"
+            Sort="{Binding Sort}"
             ItemCount="{Binding ItemCount}"
             PreviousCommand="{Binding PreviousCommand}"
             NextCommand="{Binding NextCommand}" />

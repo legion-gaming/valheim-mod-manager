@@ -34,6 +34,7 @@ namespace ValheimModManager.Core.Services
 
             return 
                 mods.Where(mod => mod.Owner != "ebkr" && mod.Name != "r2modman")
+                    .Where(mod => !mod.IsDeprecated)
                     .ToList();
         }
 
