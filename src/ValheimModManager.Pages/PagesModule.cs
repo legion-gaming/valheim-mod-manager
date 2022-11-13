@@ -26,6 +26,7 @@ namespace ValheimModManager.Pages
         {
             containerRegistry.RegisterSingleton<ThunderstoreClient>();
             containerRegistry.RegisterSingleton<IThunderstoreService, ThunderstoreService>();
+            containerRegistry.RegisterSingleton<IProfileService, ProfileService>();
             containerRegistry.RegisterSingleton<ITaskAwaiterService, TaskAwaiterService>();
             containerRegistry.RegisterSingleton<IInstallerService, InstallerService>();
             containerRegistry.RegisterSingleton<ISettingsService, SettingsService>();

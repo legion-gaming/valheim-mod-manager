@@ -8,57 +8,61 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using Prism.Commands;
+using Prism.Events;
 using Prism.Regions;
 
 using ValheimModManager.Core.Data;
 using ValheimModManager.Core.Services;
 using ValheimModManager.Core.ViewModels;
+using ValheimModManager.Pages.Models;
 
 namespace ValheimModManager.Pages.ViewModels
 {
-    public class InstalledViewModel : RegionViewModelBase<InstalledViewModel> // Todo: adjust
+    public class InstalledViewModel : RegionViewModelBase<InstalledViewModel>
     {
         private readonly IThunderstoreService _thunderstoreService;
-        private readonly IInstallerService _installerService;
         private readonly IProfileService _profileService;
+        private readonly IInstallerService _installerService;
         private readonly ISettingsService _settingsService;
 
         private int _page = -1;
         private int _pageSize = 10;
         private int _itemCount;
         private string _search;
+        private bool _canUninstallMod = true;
 
         public InstalledViewModel
         (
             ILogger<InstalledViewModel> logger,
             IRegionManager regionManager,
             IThunderstoreService thunderstoreService,
+            IProfileService profileService,
             ITaskAwaiterService taskAwaiterService,
             IInstallerService installerService,
-            IProfileService profileService,
+            IEventAggregator eventAggregator,
             ISettingsService settingsService
-        ) : base(logger, regionManager, taskAwaiterService)
+        ) : base(logger, regionManager, taskAwaiterService, eventAggregator)
         {
             _thunderstoreService = thunderstoreService;
-            _installerService = installerService;
             _profileService = profileService;
+            _installerService = installerService;
             _settingsService = settingsService;
 
-            Profiles = new ObservableLookup<string, ThunderstoreMod>();
+            Profiles = new ObservableLookup<string, Mod>();
 
             PreviousCommand = new DelegateCommand(Previous, CanGoPrevious);
             NextCommand = new DelegateCommand(Next, CanGoNext);
-            UpdateCommand = new DelegateCommand<ThunderstoreModVersion>(Update); // Todo: change to use ThunderstoreModVersion
-            UninstallCommand = new DelegateCommand<ThunderstoreMod>(Uninstall); // Todo: change to use ThunderstoreModVersion
-            UninstallWithoutDependenciesCommand = new DelegateCommand<ThunderstoreMod>(UninstallWithoutDependencies); // Todo: change to use ThunderstoreModVersion
+            UpdateCommand = new DelegateCommand<ThunderstoreModVersion>(Update);
+            UninstallCommand = new DelegateCommand<Mod>(Uninstall, _ => CanUninstallMod);
+            UninstallWithoutDependenciesCommand = new DelegateCommand<Mod>(UninstallWithoutDependencies, _ => CanUninstallMod);
         }
 
-        public ObservableLookup<string, ThunderstoreMod> Profiles { get; set; }
+        public ObservableLookup<string, Mod> Profiles { get; }
         public DelegateCommand PreviousCommand { get; }
         public DelegateCommand NextCommand { get; }
         public DelegateCommand<ThunderstoreModVersion> UpdateCommand { get; }
-        public DelegateCommand<ThunderstoreMod> UninstallCommand { get; }
-        public DelegateCommand<ThunderstoreMod> UninstallWithoutDependenciesCommand { get; }
+        public DelegateCommand<Mod> UninstallCommand { get; }
+        public DelegateCommand<Mod> UninstallWithoutDependenciesCommand { get; }
 
         public string SelectedProfile
         {
@@ -120,21 +124,37 @@ namespace ValheimModManager.Pages.ViewModels
             }
         }
 
+        public bool CanUninstallMod
+        {
+            get { return _canUninstallMod; }
+            set { SetProperty(ref _canUninstallMod, value); }
+        }
+
         public override void OnNavigatedTo(NavigationContext navigationContext)
         {
+            base.OnNavigatedTo(navigationContext);
+
             var profiles = RunAsync(() => _settingsService.GetAsync(nameof(Profiles), new List<string>()));
 
             foreach (var profile in profiles)
             {
-                Profiles.Add(profile, new ObservableCollection<ThunderstoreMod>());
+                Profiles.Add(profile, new ObservableCollection<Mod>());
             }
 
             Page = 1;
         }
 
+        public override void CanExecuteTaskChanged(Task task)
+        {
+            CanUninstallMod = task.IsCompleted;
+
+            UninstallCommand.RaiseCanExecuteChanged();
+            UninstallWithoutDependenciesCommand.RaiseCanExecuteChanged();
+        }
+
         private async Task LoadDataAsync()
         {
-            var installedMods = await _thunderstoreService.GetInstalledModsAsync(SelectedProfile);
+            var installedMods = await _profileService.GetInstalledModsAsync(SelectedProfile);
             var modCache = await _thunderstoreService.GetModsAsync();
 
             var mods =
@@ -142,8 +162,22 @@ namespace ValheimModManager.Pages.ViewModels
                     (
                         modCache,
                         installedMod => $"{installedMod.Author}-{installedMod.Name}",
-                        availableMod => $"{availableMod.Owner}-{availableMod.Name}",
-                        (_, availableMod) => availableMod
+                        onlineMod => $"{onlineMod.Owner}-{onlineMod.Name}",
+                        (installedMod, onlineMod) =>
+                        {
+                            var mod = (Mod)installedMod;
+
+                            mod.Versions =
+                                onlineMod.Versions
+                                    .Where
+                                    (
+                                        version =>
+                                            Version.Parse(version.VersionNumber) >=
+                                            Version.Parse(installedMod.VersionNumber)
+                                    );
+
+                            return mod;
+                        }
                     )
                     .Where(Filter)
                     .ToList();
@@ -161,7 +195,7 @@ namespace ValheimModManager.Pages.ViewModels
             NextCommand.RaiseCanExecuteChanged();
         }
 
-        private bool Filter(ThunderstoreMod mod)
+        private bool Filter(Mod mod)
         {
             if (string.IsNullOrWhiteSpace(Search))
             {
@@ -172,8 +206,8 @@ namespace ValheimModManager.Pages.ViewModels
             var result = true;
 
             result &= mod.Name.Contains(Search, comparison);
-            result |= mod.Owner.StartsWith(Search, comparison);
-            result |= mod.Latest.Description.Contains(Search);
+            result |= mod.Author.StartsWith(Search, comparison);
+            result |= mod.Description.Contains(Search);
 
             return result;
         }
@@ -198,28 +232,30 @@ namespace ValheimModManager.Pages.ViewModels
             return Page < PageCount;
         }
 
-        private void Update(ThunderstoreModVersion mod) // Todo:
+        private void Update(ThunderstoreModVersion mod)
         {
+            RunAsync(UpdateAsync(mod), notifyStatus: true);
         }
 
-        private void Uninstall(ThunderstoreMod mod)
+        private void Uninstall(Mod mod)
         {
-            RunAsync(UninstallAsync(mod, false));
+            RunAsync(UninstallAsync(mod, false), notifyStatus: true);
         }
 
-        private void UninstallWithoutDependencies(ThunderstoreMod mod)
+        private void UninstallWithoutDependencies(Mod mod)
         {
-            RunAsync(UninstallAsync(mod, true));
+            RunAsync(UninstallAsync(mod, true), notifyStatus: true);
         }
 
-        private async Task UninstallAsync(ThunderstoreMod mod, bool skipDependencies, CancellationToken cancellationToken = default)
+        private async Task UpdateAsync(ThunderstoreModVersion mod, CancellationToken cancellationToken = default)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            await _installerService.InstallAsync(SelectedProfile, mod.FullName, true, cancellationToken);
+            await LoadDataAsync();
+        }
 
-            var mods = await _thunderstoreService.GetInstalledModsAsync(SelectedProfile, cancellationToken); // Todo:
-            var selectedMod = mods.First(mod.Versions.Contains);
-
-            await _installerService.UninstallAsync(SelectedProfile, selectedMod.FullName, skipDependencies, cancellationToken); // Todo:
+        private async Task UninstallAsync(Mod mod, bool skipDependencies, CancellationToken cancellationToken = default)
+        {
+            await _installerService.UninstallAsync(SelectedProfile, mod.Dependency, skipDependencies, cancellationToken);
             await LoadDataAsync();
         }
     }

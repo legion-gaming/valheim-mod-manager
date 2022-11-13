@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ValheimModManager.Core.Comparers;
+using ValheimModManager.Core.Data;
 using ValheimModManager.Core.Helpers;
 using ValheimModManager.Core.Utilities;
 
@@ -15,251 +15,84 @@ namespace ValheimModManager.Core.Services
     public class InstallerService : IInstallerService
     {
         private readonly IThunderstoreService _thunderstoreService;
+        private readonly IProfileService _profileService;
+        private readonly ZipExtractorFactory _zipExtractorFactory;
 
-        public InstallerService(IThunderstoreService thunderstoreService)
+        public InstallerService(IThunderstoreService thunderstoreService, IProfileService profileService)
         {
             _thunderstoreService = thunderstoreService;
+            _zipExtractorFactory = new ZipExtractorFactory();
+            _profileService = profileService;
         }
 
-        public async Task InstallAsync(string profileName, string dependencyString, bool skipDependencies, CancellationToken cancellationToken = default)
+        public async Task InstallAsync(string profileName, ThunderstoreDependency dependency, bool skipDependencies, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var installManifest = BuildInstallManifestAsync(dependencyString, skipDependencies, cancellationToken);
-            var installedMods = await _thunderstoreService.GetInstalledModsAsync(profileName, cancellationToken);
+            var zipArchive = await _thunderstoreService.DownloadModAsync(dependency, cancellationToken);
+            var zipExtractor = _zipExtractorFactory.Create(dependency, zipArchive, PathHelper.GetProfileBasePath(profileName));
 
-            var profile =
-                new List<ModInstallInfo>
-                (
-                    installedMods.Select(mod => new ModInstallInfo(mod.FullName, mod.DownloadUrl))
-                );
-
-            await foreach (var install in installManifest.WithCancellation(cancellationToken))
-            {
-                var zipArchive = await _thunderstoreService.DownloadModAsync(install.Url, cancellationToken);
-                var zipExtractorFactory = new ZipExtractorFactory(zipArchive, PathHelper.GetProfileBasePath(profileName));
-                var zipExtractor = zipExtractorFactory.Create(install.DependencyString);
-
-                await zipExtractor.ExtractAsync(cancellationToken);
-
-                profile.Add(install);
-            }
-
-            var hashSet = new HashSet<string>();
-
-            profile =
-                profile.OrderBy(mod => mod.Name)
-                    .ThenByDescending(mod => mod.Version)
-                    .Where
-                    (
-                        mod =>
-                        {
-                            return hashSet.Add($"{mod.Author}-{mod.Name}");
-                        }
-                    )
-                    .ToList();
-
-            using (var profileStream = File.Open(PathHelper.GetProfilePath(profileName), FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            {
-                if (profileStream.Length == 0)
-                {
-                    await JsonSerializer.SerializeAsync
-                    (
-                        profileStream,
-                        profile.Select(mod => mod.DependencyString),
-                        cancellationToken: cancellationToken
-                    );
-
-                    return;
-                }
-
-                await JsonSerializer.SerializeAsync
-                (
-                    profileStream,
-                    profile.Select(mod => mod.DependencyString),
-                    cancellationToken: cancellationToken
-                );
-            }
-        }
-
-        public async Task UninstallAsync(string profileName, string dependencyString, bool skipDependencies, CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var installManifest = BuildInstallManifestAsync(dependencyString, skipDependencies, cancellationToken);
-            var installedMods = await _thunderstoreService.GetInstalledModsAsync(profileName, cancellationToken);
-
-            var profile =
-                new List<ModInstallInfo>
-                (
-                    installedMods.Select(mod => new ModInstallInfo(mod.FullName, mod.DownloadUrl))
-                );
-
-            await foreach (var install in installManifest.WithCancellation(cancellationToken))
-            {
-                try
-                {
-                    var folder = PathHelper.GetBepInExPluginBasePath(profileName);
-                    folder = Path.Combine(folder, $"{install.Name}-{install.Author}");
-
-                    Directory.Delete(folder, true);
-                }
-                catch
-                {
-                    // Suppress error
-                }
-
-                profile.Remove(profile.First(x => x.DependencyString == install.DependencyString));
-            }
-
-            profile =
-                profile.OrderBy(mod => mod.Name)
-                    .ThenByDescending(mod => mod.Version)
-                    .Where
-                    (
-                        mod =>
-                        {
-                            var hashSet = new HashSet<string>();
-                            return hashSet.Add($"{mod.Author}-{mod.Name}");
-                        }
-                    )
-                    .ToList();
-
-            using (var profileStream = File.Open(PathHelper.GetProfilePath(profileName), FileMode.Truncate, FileAccess.Write))
-            {
-                profileStream.Seek(0, SeekOrigin.Begin);
-
-                if (profileStream.Length == 0)
-                {
-                    await JsonSerializer.SerializeAsync
-                    (
-                        profileStream,
-                        profile.Select(mod => mod.DependencyString).ToList(),
-                        cancellationToken: cancellationToken
-                    );
-
-                    return;
-                }
-
-                await JsonSerializer.SerializeAsync
-                (
-                    profileStream,
-                    profile.Select(mod => mod.DependencyString).ToList(),
-                    cancellationToken: cancellationToken
-                );
-            }
-        }
-
-        private async IAsyncEnumerable<ModInstallInfo> BuildInstallManifestAsync(string dependencyString, bool skipDependencies, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var mod = await _thunderstoreService.GetModAsync(dependencyString, cancellationToken);
-            var modInstallManifest = new ModInstallInfo(dependencyString, mod.DownloadUrl);
+            await zipExtractor.ExtractAsync(cancellationToken);
+            await _profileService.AddInstalledModAsync(profileName, dependency, cancellationToken);
 
             if (skipDependencies)
             {
-                yield return modInstallManifest;
-                yield break;
+                return;
             }
 
-            var hashSet =
-                new HashSet<ModInstallInfo>(new ModInstallInfoComparer())
-                {
-                    modInstallManifest
-                };
+            var installedMods = await _profileService.GetInstalledModsAsync(profileName, cancellationToken);
 
             var dependencies =
-                BuildInstallManifestAsyncImpl(dependencyString, cancellationToken)
-                    .OrderByDescending(manifest => manifest.Version);
+                _thunderstoreService.ResolveDependenciesAsync(dependency, cancellationToken)
+                    .Except(installedMods.Select(mod => mod.FullName).ToAsyncEnumerable(), new DependencyComparer());
 
-            await foreach (var dependency in dependencies)
+            await foreach (var resolvedDependency in dependencies.WithCancellation(cancellationToken))
             {
-                hashSet.Add(dependency);
-            }
-
-            foreach (var dependency in hashSet)
-            {
-                yield return dependency;
+                await InstallAsync(profileName, resolvedDependency, false, cancellationToken);
             }
         }
 
-        private async IAsyncEnumerable<ModInstallInfo> BuildInstallManifestAsyncImpl(string dependencyString, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public Task InstallAsync(string profileName, ZipArchive zipArchive, bool skipDependencies, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var mod = await _thunderstoreService.GetModAsync(dependencyString, cancellationToken);
-
-            if (mod == null)
-            {
-                yield break;
-            }
-
-            foreach (var dependency in mod.Dependencies)
-            {
-                var dependencyMod = await _thunderstoreService.GetModAsync(dependency, cancellationToken);
-
-                yield return new ModInstallInfo(dependency, dependencyMod.DownloadUrl);
-
-                await foreach (var innerDependency in BuildInstallManifestAsyncImpl(dependency, cancellationToken))
-                {
-                    yield return innerDependency;
-                }
-            }
+            throw new NotImplementedException(); // Todo: allow for installing from a zip
         }
 
-        private class ModInstallInfo
+        public async Task UninstallAsync(string profileName, ThunderstoreDependency dependency, bool skipDependencies, CancellationToken cancellationToken = default)
         {
-            public ModInstallInfo(string dependencyString, string url)
-            {
-                if (DependencyStringHelper.TryParse(dependencyString, out var mod))
-                {
-                    Author = mod.Author;
-                    Name = mod.Name;
-                    Version = mod.Version;
-                }
+            cancellationToken.ThrowIfCancellationRequested();
 
-                Url = url;
-                DependencyString = dependencyString;
+            if (dependency.Author == "denikson" && dependency.Name == "BepInExPack_Valheim")
+            {
+                Directory.Delete(PathHelper.GetBepInExBasePath(profileName), true);
+                await _profileService.RemoveInstalledModAsync(profileName, dependency, cancellationToken);
+
+                return;
             }
 
-            public string Author { get; }
-            public string Name { get; }
-            public Version Version { get; }
-            public string Url { get; }
-            public string DependencyString { get; }
-        }
+            var pluginPath = PathHelper.GetBepInExPluginBasePath(profileName);
+            pluginPath = Path.Combine(pluginPath, $"{dependency.Name}-{dependency.Author}");
 
-        private class ModInstallInfoComparer : IEqualityComparer<ModInstallInfo>
-        {
-            public bool Equals(ModInstallInfo x, ModInstallInfo y)
+            if (!Directory.Exists(pluginPath))
             {
-                if (ReferenceEquals(x, y))
-                {
-                    return true;
-                }
-
-                if (ReferenceEquals(x, null))
-                {
-                    return false;
-                }
-
-                if (ReferenceEquals(y, null))
-                {
-                    return false;
-                }
-
-                if (x.GetType() != y.GetType())
-                {
-                    return false;
-                }
-
-                return x.Author == y.Author && x.Name == y.Name;
+                return;
             }
 
-            public int GetHashCode(ModInstallInfo modInstallManifest)
+            Directory.Delete(pluginPath, true);
+
+            await _profileService.RemoveInstalledModAsync(profileName, dependency, cancellationToken);
+
+            if (skipDependencies)
             {
-                return HashCode.Combine(modInstallManifest.Author, modInstallManifest.Name);
+                return;
+            }
+
+            var dependencies = _thunderstoreService.ResolveBackwardDependenciesAsync(dependency, cancellationToken);
+
+            await foreach (var resolvedDependency in dependencies.WithCancellation(cancellationToken))
+            {
+                await UninstallAsync(profileName, resolvedDependency, true, cancellationToken);
             }
         }
     }
