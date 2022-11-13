@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,9 +21,12 @@ namespace ValheimModManager.Pages.ViewModels
     {
         private readonly IThunderstoreService _thunderstoreService;
         private readonly IInstallerService _installerService;
+        private readonly IProfileService _profileService;
+        private readonly ISettingsService _settingsService;
 
         private int _page = -1;
         private int _pageSize = 10;
+        private string _sort = "Last Updated";
         private int _itemCount;
         private string _search;
         private bool _canDownloadMod = true;
@@ -33,11 +38,15 @@ namespace ValheimModManager.Pages.ViewModels
             IThunderstoreService thunderstoreService,
             IInstallerService installerService,
             ITaskAwaiterService taskAwaiterService,
-            IEventAggregator eventAggregator
+            IEventAggregator eventAggregator,
+            IProfileService profileService,
+            ISettingsService settingsService
         ) : base(logger, regionManager, taskAwaiterService, eventAggregator)
         {
             _thunderstoreService = thunderstoreService;
             _installerService = installerService;
+            _profileService = profileService;
+            _settingsService = settingsService;
 
             Profiles = new ObservableLookup<string, Mod>("Online");
 
@@ -52,6 +61,16 @@ namespace ValheimModManager.Pages.ViewModels
         public DelegateCommand NextCommand { get; }
         public DelegateCommand<ThunderstoreModVersion> DownloadCommand { get; }
         public DelegateCommand<ThunderstoreModVersion> DownloadWithoutDependenciesCommand { get; }
+
+        public string SelectedProfile
+        {
+            get { return _profileService.GetSelectedProfile(); }
+            set
+            {
+                _profileService.SetSelectedProfile(value);
+                RaisePropertyChanged();
+            }
+        }
 
         public int Page
         {
@@ -74,6 +93,16 @@ namespace ValheimModManager.Pages.ViewModels
                 RaisePropertyChanged(nameof(PageCount));
 
                 Page = 1;
+            }
+        }
+
+        public string Sort
+        {
+            get { return _sort; }
+            set
+            {
+                SetProperty(ref _sort, value);
+                RunAsync(LoadDataAsync());
             }
         }
 
@@ -123,18 +152,25 @@ namespace ValheimModManager.Pages.ViewModels
             DownloadWithoutDependenciesCommand.RaiseCanExecuteChanged();
         }
 
-        private async Task LoadDataAsync() // Todo: refactor
+        private async Task LoadDataAsync()
         {
             var modCache = await _thunderstoreService.GetModsAsync();
-            var mods = modCache.Select(mod => (Mod)mod).Where(Filter).ToList();
+            var mods = SortResults(modCache.Select(mod => (Mod)mod).Where(Filter)).ToList();
 
             ItemCount = mods.Count;
 
-            Profiles["Online"].Clear();
+            var profiles = RunAsync(() => _settingsService.GetAsync(nameof(Profiles), new List<string>()));
 
-            foreach (var mod in mods.Skip((Page - 1) * PageSize).Take(PageSize))
+            Profiles.Clear();
+
+            foreach (var profile in profiles)
             {
-                Profiles["Online"].Add(mod);
+                Profiles.Add(profile, new ObservableCollection<Mod>());
+
+                foreach (var mod in mods.Skip((Page - 1) * PageSize).Take(PageSize))
+                {
+                    Profiles[profile].Add(mod);
+                }
             }
 
             PreviousCommand.RaiseCanExecuteChanged();
@@ -156,6 +192,24 @@ namespace ValheimModManager.Pages.ViewModels
             result |= mod.Description.Contains(Search);
 
             return result;
+        }
+
+        private IEnumerable<Mod> SortResults(IEnumerable<Mod> mods)
+        {
+            switch (Sort.ToLower().Replace(" ", string.Empty))
+            {
+                default:
+                    return mods;
+
+                case "lastupdated":
+                    return mods.OrderByDescending(mod => mod.LastUpdated);
+
+                case "modname":
+                    return mods.OrderBy(mod => mod.Name);
+
+                case "authorname":
+                    return mods.OrderBy(mod => mod.Author);
+            }
         }
 
         private void Previous()
@@ -180,12 +234,12 @@ namespace ValheimModManager.Pages.ViewModels
 
         private void Download(ThunderstoreModVersion mod)
         {
-            RunAsync(_installerService.InstallAsync("default", mod.FullName, false), notifyStatus: true);
+            RunAsync(_installerService.InstallAsync(SelectedProfile, mod.FullName, false), notifyStatus: true);
         }
 
         private void DownloadWithoutDependencies(ThunderstoreModVersion mod)
         {
-            RunAsync(_installerService.InstallAsync("default", mod.FullName, true), notifyStatus: true);
+            RunAsync(_installerService.InstallAsync(SelectedProfile, mod.FullName, true), notifyStatus: true);
         }
     }
 }

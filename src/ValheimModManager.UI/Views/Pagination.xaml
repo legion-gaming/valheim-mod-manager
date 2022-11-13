@@ -15,6 +15,7 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <StackPanel
             Orientation="Horizontal"
@@ -55,7 +56,8 @@
                 Margin="10, 0"
                 Padding="7"
                 ItemsSource="{Binding ElementName=uc, Path=PageCount, Converter={StaticResource IntToRangeConverter}}"
-                SelectedItem="{Binding ElementName=uc, Path=Page, Mode=TwoWay}" />
+                SelectedItem="{Binding ElementName=uc, Path=Page, Mode=TwoWay}"
+                SelectedIndex="0"/>
 
             <!-- Next -->
             <ui:Button
@@ -87,6 +89,31 @@
                         <sys:Int32>25</sys:Int32>
                         <sys:Int32>50</sys:Int32>
                         <sys:Int32>100</sys:Int32>
+                    </x:Array>
+                </ComboBox.ItemsSource>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel
+            Grid.Column="3"
+            Orientation="Horizontal"
+            VerticalAlignment="Center">
+            <TextBlock
+                FontSize="18"
+                Margin="10, 0"
+                VerticalAlignment="Center"
+                Text="Sort" />
+
+            <ComboBox
+                FontSize="18"
+                FontWeight="Bold"
+                Padding="7"
+                SelectedItem="{Binding ElementName=uc, Path=Sort, Mode=TwoWay}"
+                SelectedIndex="0">
+                <ComboBox.ItemsSource>
+                    <x:Array Type="{x:Type sys:String}">
+                        <sys:String>Last Updated</sys:String>
+                        <sys:String>Mod Name</sys:String>
+                        <sys:String>Author Name</sys:String>
                     </x:Array>
                 </ComboBox.ItemsSource>
             </ComboBox>

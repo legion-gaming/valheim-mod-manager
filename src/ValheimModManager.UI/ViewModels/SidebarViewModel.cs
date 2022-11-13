@@ -17,6 +17,7 @@ namespace ValheimModManager.UI.ViewModels
     public class SidebarViewModel : RegionViewModelBase<SidebarViewModel>
     {
         private readonly ISettingsService _settingsService;
+        private readonly IProfileService _profileService;
 
         public SidebarViewModel
         (
@@ -24,10 +25,12 @@ namespace ValheimModManager.UI.ViewModels
             IRegionManager regionManager,
             ISettingsService settingsService,
             ITaskAwaiterService taskAwaiterService,
-            IEventAggregator eventAggregator
+            IEventAggregator eventAggregator,
+            IProfileService profileService
         ) : base(logger, regionManager, taskAwaiterService, eventAggregator)
         {
             _settingsService = settingsService;
+            _profileService = profileService;
 
             StartModdedCommand = new DelegateCommand(StartModded);
             StartVanillaCommand = new DelegateCommand(StartVanilla);
@@ -60,7 +63,7 @@ namespace ValheimModManager.UI.ViewModels
 
         private void StartModded() // Todo:
         {
-            var currentDirectory = PathHelper.GetBepInExCoreBasePath("default"); // Todo:
+            var currentDirectory = PathHelper.GetBepInExCoreBasePath(_profileService.GetSelectedProfile());
             var currentPath = Path.Combine(currentDirectory, "BepInEx.Preloader.dll");
 
             var arguments =

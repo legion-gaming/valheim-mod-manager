@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using ValheimModManager.Core.Data;
@@ -23,6 +24,7 @@ namespace ValheimModManager.Pages.Models
             Name = mod.Name;
             Description = mod.Latest.Description;
             Icon = mod.Latest.Icon;
+            LastUpdated = mod.DateUpdated;
             Dependency = mod.Latest.FullName;
             Version = mod.Latest;
             Versions = mod.Versions;
@@ -34,6 +36,7 @@ namespace ValheimModManager.Pages.Models
             Name = version.Name;
             Description = version.Description;
             Icon = version.Icon;
+            LastUpdated = version.DateCreated;
             Dependency = version.FullName;
             Version = version;
             Versions = Enumerable.Empty<ThunderstoreModVersion>();
@@ -43,6 +46,7 @@ namespace ValheimModManager.Pages.Models
         public string Name { get; }
         public string Description { get; }
         public string Icon { get; }
+        public DateTime LastUpdated { get; }
         public ThunderstoreDependency Dependency { get; }
         public ThunderstoreModVersion Version { get; }
         public IEnumerable<ThunderstoreModVersion> Versions { get; internal set; }

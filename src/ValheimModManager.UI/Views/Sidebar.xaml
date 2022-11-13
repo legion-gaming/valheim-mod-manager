@@ -15,6 +15,7 @@
                 Margin="20, 0"/>
 
             <ui:Button
+                Appearance="Info"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Left"
                 Margin="0, 10"
@@ -40,6 +41,7 @@
             </ui:Button>
 
             <ui:Button
+                Appearance="Info"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Left"
                 Margin="0, 10"
@@ -72,6 +74,33 @@
                 FontSize="14"
                 FontWeight="Bold"
                 Margin="20, 0"/>
+
+            <ui:Button
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Left"
+                Margin="0, 10"
+                Command="{Binding NavigateCommand}"
+                CommandParameter="{x:Static data:PageName.Profiles}">
+                <ui:Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ui:SymbolIcon
+                            Grid.Column="0"
+                            Symbol="Person24"
+                            Filled="True"
+                            FontSize="24"/>
+
+                        <TextBlock
+                            Grid.Column="1"
+                            FontSize="24"
+                            Margin="10, 0"
+                            Text="Profiles" />
+                    </Grid>
+                </ui:Button.Content>
+            </ui:Button>
 
             <ui:Button
                 HorizontalAlignment="Stretch"
@@ -135,6 +164,7 @@
                 Margin="20, 0"/>
 
             <ui:Button
+                Appearance="Danger"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Left"
                 Margin="0, 10"

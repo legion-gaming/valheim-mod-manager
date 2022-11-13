@@ -15,6 +15,8 @@ namespace ValheimModManager.Core.Services
     {
         private readonly IThunderstoreService _thunderstoreService;
 
+        private string _selectedProfile;
+
         public ProfileService(IThunderstoreService thunderstoreService)
         {
             _thunderstoreService = thunderstoreService;
@@ -156,6 +158,16 @@ namespace ValheimModManager.Core.Services
                     cancellationToken: cancellationToken
                 );
             }
+        }
+
+        public string GetSelectedProfile()
+        {
+            return _selectedProfile;
+        }
+
+        public void SetSelectedProfile(string profileName)
+        {
+            _selectedProfile = profileName;
         }
     }
 }
