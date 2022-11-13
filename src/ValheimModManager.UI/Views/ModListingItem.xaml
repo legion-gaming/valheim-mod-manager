@@ -27,7 +27,7 @@
             Width="64"
             Height="64"
             Margin="20"
-            Source="{Binding Latest.Icon}">
+            Source="{Binding Icon}">
         </Image>
 
         <!-- Name -->
@@ -50,7 +50,7 @@
                 Text="by " />
             <TextBlock
                 FontSize="16"
-                Text="{Binding Owner}" />
+                Text="{Binding Author}" />
         </StackPanel>
 
         <!-- Description -->
@@ -58,6 +58,6 @@
             Grid.Row="2"
             Grid.Column="1"
             FontSize="16"
-            Text="{Binding Latest.Description}" />
+            Text="{Binding Description}" />
     </Grid>
 </UserControl>

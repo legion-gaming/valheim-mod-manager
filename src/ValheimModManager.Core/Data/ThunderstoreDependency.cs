@@ -2,11 +2,42 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace ValheimModManager.Core.Helpers
+namespace ValheimModManager.Core.Data
 {
-    public static class DependencyStringHelper
+    public class ThunderstoreDependency
     {
-        public static bool TryParse(string dependencyString, out (string Author, string Name, Version Version) mod)
+        public static implicit operator string(ThunderstoreDependency dependency)
+        {
+            return dependency.ToString();
+        }
+
+        public static implicit operator ThunderstoreDependency(string dependencyString)
+        {
+            return new ThunderstoreDependency(dependencyString);
+        }
+
+        private ThunderstoreDependency(string dependencyString)
+        {
+            if (!TryParse(dependencyString, out var mod))
+            {
+                throw new FormatException("Dependency string was not in a valid format.");
+            }
+
+            Author = mod.Author;
+            Name = mod.Name;
+            Version = mod.Version;
+        }
+
+        public string Author { get; }
+        public string Name { get; }
+        public Version Version { get; }
+
+        public override string ToString()
+        {
+            return $"{Author}-{Name}-{Version}";
+        }
+
+        private static bool TryParse(string dependencyString, out (string Author, string Name, Version Version) mod)
         {
             mod = default;
 

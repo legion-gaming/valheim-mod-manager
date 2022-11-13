@@ -1,31 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Windows.Data;
 
 namespace ValheimModManager.Core.Converters
 {
-    public class IntToRangeConverter : IValueConverter // Todo:
+    public class IntToRangeConverter : ValueConverterBase<int, IEnumerable<int>>
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public override IEnumerable<int> Convert(int value, object parameter, CultureInfo culture)
         {
-            if (value is int intValue)
-            {
-                return Enumerable.Range(1, intValue);
-            }
-
-            return Enumerable.Empty<int>();
+            return Enumerable.Range(1, value);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public override int Convert(IEnumerable<int> value, object parameter, CultureInfo culture)
         {
-            if (value is IEnumerable<int> range)
-            {
-                return range.Max();
-            }
-
-            return 0;
+            return value.Max();
         }
     }
 }

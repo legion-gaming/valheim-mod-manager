@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Navigation;
 
@@ -18,15 +19,18 @@ namespace ValheimModManager.Core.ViewModels
         protected ViewModelBase
         (
             ILogger<TViewModel> logger,
-            ITaskAwaiterService taskAwaiterService
+            ITaskAwaiterService taskAwaiterService,
+            IEventAggregator eventAggregator
         )
         {
             _taskAwaiterService = taskAwaiterService;
 
             Logger = logger;
+            EventAggregator = eventAggregator;
         }
 
         protected ILogger<TViewModel> Logger { get; }
+        protected IEventAggregator EventAggregator { get; }
 
         public virtual void Destroy()
         {
