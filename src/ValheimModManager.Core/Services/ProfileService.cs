@@ -14,12 +14,23 @@ namespace ValheimModManager.Core.Services
     public class ProfileService : IProfileService
     {
         private readonly IThunderstoreService _thunderstoreService;
+        private readonly ISettingsService _settingsService;
 
         private string _selectedProfile;
 
-        public ProfileService(IThunderstoreService thunderstoreService)
+        public ProfileService
+        (
+            IThunderstoreService thunderstoreService,
+            ISettingsService settingsService
+        )
         {
             _thunderstoreService = thunderstoreService;
+            _settingsService = settingsService;
+        }
+
+        public Task<List<string>> GetProfilesAsync(CancellationToken cancellationToken = default)
+        {
+            return _settingsService.GetAsync("Profiles", new List<string>(), cancellationToken);
         }
 
         public async Task<IList<ThunderstoreModVersion>> GetInstalledModsAsync(string profileName, CancellationToken cancellationToken = default)
