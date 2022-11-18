@@ -48,7 +48,7 @@ namespace ValheimModManager.Pages.ViewModels
             _profileService = profileService;
             _settingsService = settingsService;
 
-            Profiles = new ObservableLookup<string, Mod>("Online");
+            Profiles = new ObservableLookup<string, Mod>();
 
             PreviousCommand = new DelegateCommand(Previous, CanGoPrevious);
             NextCommand = new DelegateCommand(Next, CanGoNext);
@@ -141,6 +141,15 @@ namespace ValheimModManager.Pages.ViewModels
         {
             base.OnNavigatedTo(navigationContext);
 
+            var profiles = RunAsync(() => _profileService.GetProfilesAsync());
+
+            Profiles.Clear();
+
+            foreach (var profile in profiles)
+            {
+                Profiles.Add(profile, new ObservableCollection<Mod>());
+            }
+
             Page = 1;
         }
 
@@ -159,13 +168,11 @@ namespace ValheimModManager.Pages.ViewModels
 
             ItemCount = mods.Count;
 
-            var profiles = RunAsync(() => _settingsService.GetAsync(nameof(Profiles), new List<string>()));
-
-            Profiles.Clear();
+            var profiles = RunAsync(() => _profileService.GetProfilesAsync());
 
             foreach (var profile in profiles)
             {
-                Profiles.Add(profile, new ObservableCollection<Mod>());
+                Profiles[profile].Clear();
 
                 foreach (var mod in mods.Skip((Page - 1) * PageSize).Take(PageSize))
                 {

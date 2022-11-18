@@ -145,7 +145,7 @@ namespace ValheimModManager.Pages.ViewModels
         {
             base.OnNavigatedTo(navigationContext);
 
-            var profiles = RunAsync(() => _settingsService.GetAsync(nameof(Profiles), new List<string>()));
+            var profiles = RunAsync(() => _profileService.GetProfilesAsync());
 
             Profiles.Clear();
 
