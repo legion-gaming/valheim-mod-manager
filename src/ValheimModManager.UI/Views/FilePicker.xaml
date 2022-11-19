@@ -15,7 +15,6 @@
 
         <ui:TextBox
             Grid.Column="0"
-            FontSize="18"
             IsReadOnly="True"
             Text="{Binding ElementName=uc, Path=FileName}" />
 
@@ -26,7 +25,6 @@
             FontWeight="Bold"
             FontSize="18"
             Icon="Folder28"
-            Padding="9"
             Click="Browse" />
     </Grid>
 </UserControl>

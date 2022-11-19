@@ -14,6 +14,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -50,7 +51,36 @@
         </StackPanel>
 
         <StackPanel
-            Grid.Row="4"
+            Grid.Row="3"
+            Margin="10, 20">
+            <TextBlock
+                FontWeight="Bold"
+                FontSize="18"
+                Text="Data Folder:" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <ui:TextBox
+                    Grid.Column="0"
+                    ClearButtonEnabled="False"
+                    IsReadOnly="True"
+                    Text="{Binding DataFolder, Mode=OneWay}" />
+                <ui:Button
+                    Grid.Column="1"
+                    Appearance="Primary"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    Icon="Folder24"
+                    Content="Open"
+                    Command="{Binding DataFolderCommand}"/>
+            </Grid>
+        </StackPanel>
+
+        <StackPanel
+            Grid.Row="5"
             Margin="10, 20">
                 <ui:Button
                     Appearance="Info"

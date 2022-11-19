@@ -7,6 +7,7 @@ namespace ValheimModManager.UI.Views
     {
         public static readonly DependencyProperty DownloadCommandProperty;
         public static readonly DependencyProperty DownloadWithoutDependenciesCommandProperty;
+        public static readonly DependencyProperty WebsiteCommandProperty;
 
         static OnlineModActions()
         {
@@ -23,6 +24,15 @@ namespace ValheimModManager.UI.Views
                 DependencyProperty.Register
                 (
                     nameof(DownloadWithoutDependenciesCommand),
+                    typeof(ICommand),
+                    typeof(OnlineModActions),
+                    new PropertyMetadata(default(ICommand))
+                );
+
+            WebsiteCommandProperty =
+                DependencyProperty.Register
+                (
+                    nameof(WebsiteCommand),
                     typeof(ICommand),
                     typeof(OnlineModActions),
                     new PropertyMetadata(default(ICommand))
@@ -44,6 +54,12 @@ namespace ValheimModManager.UI.Views
         {
             get { return (ICommand)GetValue(DownloadWithoutDependenciesCommandProperty); }
             set { SetValue(DownloadWithoutDependenciesCommandProperty, value); }
+        }
+
+        public ICommand WebsiteCommand
+        {
+            get { return (ICommand)GetValue(WebsiteCommandProperty); }
+            set { SetValue(WebsiteCommandProperty, value); }
         }
     }
 }

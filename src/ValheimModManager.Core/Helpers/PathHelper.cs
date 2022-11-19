@@ -61,7 +61,7 @@ namespace ValheimModManager.Core.Helpers
             return Path.Combine(basePath, "settings.json");
         }
 
-        private static string GetBasePath()
+        public static string GetBasePath()
         {
             #if DEBUG
 

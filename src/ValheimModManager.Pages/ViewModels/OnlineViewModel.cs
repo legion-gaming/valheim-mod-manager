@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,7 +23,6 @@ namespace ValheimModManager.Pages.ViewModels
         private readonly IThunderstoreService _thunderstoreService;
         private readonly IInstallerService _installerService;
         private readonly IProfileService _profileService;
-        private readonly ISettingsService _settingsService;
 
         private int _page = -1;
         private int _pageSize = 10;
@@ -39,14 +39,12 @@ namespace ValheimModManager.Pages.ViewModels
             IInstallerService installerService,
             ITaskAwaiterService taskAwaiterService,
             IEventAggregator eventAggregator,
-            IProfileService profileService,
-            ISettingsService settingsService
+            IProfileService profileService
         ) : base(logger, regionManager, taskAwaiterService, eventAggregator)
         {
             _thunderstoreService = thunderstoreService;
             _installerService = installerService;
             _profileService = profileService;
-            _settingsService = settingsService;
 
             Profiles = new ObservableLookup<string, Mod>();
 
@@ -54,6 +52,7 @@ namespace ValheimModManager.Pages.ViewModels
             NextCommand = new DelegateCommand(Next, CanGoNext);
             DownloadCommand = new DelegateCommand<ThunderstoreModVersion>(Download, _ => CanDownloadMod);
             DownloadWithoutDependenciesCommand = new DelegateCommand<ThunderstoreModVersion>(DownloadWithoutDependencies, _ => CanDownloadMod);
+            WebsiteCommand = new DelegateCommand<ThunderstoreModVersion>(Website);
         }
 
         public ObservableLookup<string, Mod> Profiles { get; }
@@ -61,6 +60,7 @@ namespace ValheimModManager.Pages.ViewModels
         public DelegateCommand NextCommand { get; }
         public DelegateCommand<ThunderstoreModVersion> DownloadCommand { get; }
         public DelegateCommand<ThunderstoreModVersion> DownloadWithoutDependenciesCommand { get; }
+        public DelegateCommand<ThunderstoreModVersion> WebsiteCommand { get; }
 
         public string SelectedProfile
         {
@@ -247,6 +247,23 @@ namespace ValheimModManager.Pages.ViewModels
         private void DownloadWithoutDependencies(ThunderstoreModVersion mod)
         {
             RunAsync(_installerService.InstallAsync(SelectedProfile, mod.FullName, true), notifyStatus: true);
+        }
+
+        private void Website(ThunderstoreModVersion mod)
+        {
+            var url =
+                mod.DownloadUrl
+                    .Replace("thunderstore.io", "valheim.thunderstore.io")
+                    .Replace("download/", string.Empty);
+
+            var processStartInfo =
+                new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                };
+
+            Process.Start(processStartInfo);
         }
     }
 }
