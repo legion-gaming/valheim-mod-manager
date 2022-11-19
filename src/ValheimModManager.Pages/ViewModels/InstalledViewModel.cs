@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,6 +57,7 @@ namespace ValheimModManager.Pages.ViewModels
             UpdateCommand = new DelegateCommand<ThunderstoreModVersion>(Update);
             UninstallCommand = new DelegateCommand<Mod>(Uninstall, _ => CanUninstallMod);
             UninstallWithoutDependenciesCommand = new DelegateCommand<Mod>(UninstallWithoutDependencies, _ => CanUninstallMod);
+            WebsiteCommand = new DelegateCommand<Mod>(Website);
         }
 
         public ObservableLookup<string, Mod> Profiles { get; }
@@ -64,6 +66,7 @@ namespace ValheimModManager.Pages.ViewModels
         public DelegateCommand<ThunderstoreModVersion> UpdateCommand { get; }
         public DelegateCommand<Mod> UninstallCommand { get; }
         public DelegateCommand<Mod> UninstallWithoutDependenciesCommand { get; }
+        public DelegateCommand<Mod> WebsiteCommand { get; }
 
         public string SelectedProfile
         {
@@ -279,6 +282,20 @@ namespace ValheimModManager.Pages.ViewModels
         private void UninstallWithoutDependencies(Mod mod)
         {
             RunAsync(UninstallAsync(mod, true), notifyStatus: true);
+        }
+
+        private void Website(Mod mod)
+        {
+            var url = $"https://valheim.thunderstore.io/package/{mod.Author}/{mod.Name}/{mod.Version.VersionNumber}/";
+
+            var processStartInfo =
+                new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                };
+
+            Process.Start(processStartInfo);
         }
 
         private async Task UpdateAsync(ThunderstoreModVersion mod, CancellationToken cancellationToken = default)

@@ -46,7 +46,7 @@
                     DisplayMemberPath="VersionNumber"
                     FontSize="18"
                     FontWeight="Bold"
-                    Margin="0, 0, 10, 0"
+                    Margin="5, 0"
                     x:Name="VersionSelector"/>
 
                 <ui:Button
@@ -55,7 +55,7 @@
                     Content="Update"
                     FontSize="18"
                     FontWeight="Bold"
-                    Margin="0, 0, 10, 0"
+                    Margin="5, 0"
                     Padding="9"
                     Command="{Binding ElementName=uc, Path=UpdateCommand}"
                     CommandParameter="{Binding ElementName=VersionSelector, Path=SelectedItem}" />
@@ -67,7 +67,7 @@
                 Content="Uninstall"
                 FontSize="18"
                 FontWeight="Bold"
-                Margin="0, 0, 10, 0"
+                Margin="5, 0"
                 Padding="9"
                 Command="{Binding ElementName=uc, Path=UninstallCommand}"
                 CommandParameter="{Binding ElementName=uc, Path=UninstallCommandParameter}" />
@@ -78,9 +78,21 @@
                 Content="Uninstall without dependencies"
                 FontSize="18"
                 FontWeight="Bold"
+                Margin="5, 0"
                 Padding="9"
                 Command="{Binding ElementName=uc, Path=UninstallWithoutDependenciesCommand}"
                 CommandParameter="{Binding ElementName=uc, Path=UninstallWithoutDependenciesCommandParameter}"/>
+
+            <ui:Button
+                Appearance="Primary"
+                Icon="BranchFork24"
+                Content="{Binding Version.VersionNumber}"
+                FontSize="18"
+                FontWeight="Bold"
+                Margin="5, 0"
+                Padding="9"
+                Command="{Binding ElementName=uc, Path=WebsiteCommand}"
+                CommandParameter="{Binding ElementName=uc, Path=WebsiteCommandParameter}"/>
         </StackPanel>
     </Grid>
 </UserControl>

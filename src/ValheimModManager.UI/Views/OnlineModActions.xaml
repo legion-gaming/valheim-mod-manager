@@ -13,7 +13,7 @@
                 DisplayMemberPath="VersionNumber"
                 FontSize="18"
                 FontWeight="Bold"
-                Margin="0, 0, 10, 0"
+                Margin="5, 0"
                 SelectedIndex="0"
                 x:Name="VersionSelector"/>
 
@@ -23,7 +23,7 @@
                 Content="Download"
                 FontSize="18"
                 FontWeight="Bold"
-                Margin="0, 0, 10, 0"
+                Margin="5, 0"
                 Padding="9"
                 Command="{Binding ElementName=uc, Path=DownloadCommand}"
                 CommandParameter="{Binding ElementName=VersionSelector, Path=SelectedItem}" />
@@ -34,8 +34,20 @@
                 Content="Download without dependencies"
                 FontSize="18"
                 FontWeight="Bold"
+                Margin="5, 0"
                 Padding="9"
                 Command="{Binding ElementName=uc, Path=DownloadWithoutDependenciesCommand}"
+                CommandParameter="{Binding ElementName=VersionSelector, Path=SelectedItem}" />
+
+            <ui:Button
+                Appearance="Primary"
+                Icon="Globe24"
+                Content="Website"
+                FontSize="18"
+                FontWeight="Bold"
+                Margin="5, 0"
+                Padding="9"
+                Command="{Binding ElementName=uc, Path=WebsiteCommand}"
                 CommandParameter="{Binding ElementName=VersionSelector, Path=SelectedItem}" />
         </StackPanel>
     </Grid>

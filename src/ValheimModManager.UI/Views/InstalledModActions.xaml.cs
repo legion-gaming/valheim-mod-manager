@@ -10,6 +10,8 @@ namespace ValheimModManager.UI.Views
         public static readonly DependencyProperty UninstallCommandParameterProperty;
         public static readonly DependencyProperty UninstallWithoutDependenciesCommandProperty;
         public static readonly DependencyProperty UninstallWithoutDependenciesCommandParameterProperty;
+        public static readonly DependencyProperty WebsiteCommandProperty;
+        public static readonly DependencyProperty WebsiteCommandParameterProperty;
 
         static InstalledModActions()
         {
@@ -57,6 +59,24 @@ namespace ValheimModManager.UI.Views
                     typeof(InstalledModActions),
                     new PropertyMetadata(default)
                 );
+
+            WebsiteCommandProperty =
+                DependencyProperty.Register
+                (
+                    nameof(WebsiteCommand),
+                    typeof(ICommand),
+                    typeof(InstalledModActions),
+                    new PropertyMetadata(default(ICommand))
+                );
+
+            WebsiteCommandParameterProperty =
+                DependencyProperty.Register
+                (
+                    nameof(WebsiteCommandParameter),
+                    typeof(object),
+                    typeof(InstalledModActions),
+                    new PropertyMetadata(default)
+                );
         }
 
         public InstalledModActions()
@@ -89,6 +109,18 @@ namespace ValheimModManager.UI.Views
         }
 
         public object UninstallWithoutDependenciesCommandParameter
+        {
+            get { return GetValue(UninstallWithoutDependenciesCommandParameterProperty); }
+            set { SetValue(UninstallWithoutDependenciesCommandParameterProperty, value); }
+        }
+
+        public ICommand WebsiteCommand
+        {
+            get { return (ICommand)GetValue(UninstallWithoutDependenciesCommandProperty); }
+            set { SetValue(UninstallWithoutDependenciesCommandProperty, value); }
+        }
+
+        public object WebsiteCommandParameter
         {
             get { return GetValue(UninstallWithoutDependenciesCommandParameterProperty); }
             set { SetValue(UninstallWithoutDependenciesCommandParameterProperty, value); }

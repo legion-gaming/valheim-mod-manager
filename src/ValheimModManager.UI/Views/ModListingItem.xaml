@@ -11,6 +11,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition
@@ -59,5 +60,20 @@
             Grid.Column="1"
             FontSize="16"
             Text="{Binding Description}" />
+
+        <!-- Last Updated -->
+        <StackPanel
+            Grid.Row="3"
+            Grid.Column="1"
+            Orientation="Horizontal">
+            <TextBlock
+                FontSize="16"
+                FontWeight="Bold"
+                Text="Last Updated: " />
+
+            <TextBlock
+                FontSize="16"
+                Text="{Binding LastUpdated}" />
+        </StackPanel>
     </Grid>
 </UserControl>

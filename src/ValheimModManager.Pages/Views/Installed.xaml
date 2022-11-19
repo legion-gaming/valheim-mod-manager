@@ -109,6 +109,8 @@
                                         UninstallCommandParameter="{Binding}"
                                         UninstallWithoutDependenciesCommand="{Binding ElementName=uc, Path=DataContext.UninstallWithoutDependenciesCommand}"
                                         UninstallWithoutDependenciesCommandParameter="{Binding}"
+                                        WebsiteCommand="{Binding ElementName=uc, Path=DataContext.WebsiteCommand}"
+                                        WebsiteCommandParameter="{Binding}"
                                         Margin="114, 0, 0, 10">
                                         <views:InstalledModActions.Style>
                                             <Style

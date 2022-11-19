@@ -59,6 +59,7 @@
                                         DataContext="{Binding}"
                                         DownloadCommand="{Binding ElementName=uc, Path=DataContext.DownloadCommand}"
                                         DownloadWithoutDependenciesCommand="{Binding ElementName=uc, Path=DataContext.DownloadWithoutDependenciesCommand}"
+                                        WebsiteCommand="{Binding ElementName=uc, Path=DataContext.WebsiteCommand}"
                                         Margin="114, 0, 0, 10">
                                         <views:OnlineModActions.Style>
                                             <Style
